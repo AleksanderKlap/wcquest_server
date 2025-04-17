@@ -1,3 +1,4 @@
+import "../types/express";
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import prisma from "./prisma";
