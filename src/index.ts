@@ -2,6 +2,9 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import prisma from "./prisma";
 import { authRouter } from "./routes/auth.routes";
+import errorHandler, {
+  routeNotFound,
+} from "./middleware/error-handler.middleware";
 
 dotenv.config();
 const app = express();
@@ -22,6 +25,9 @@ app.get("/users", async (req: Request, res: Response) => {
   const users = await prisma.user.findMany();
   res.json(users);
 });
+
+app.use(routeNotFound);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
