@@ -3,6 +3,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npm run build && npx tsc --noEmit
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma deploy && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
