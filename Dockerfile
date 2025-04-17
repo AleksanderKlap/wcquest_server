@@ -5,4 +5,4 @@ RUN npm install
 COPY . .
 RUN npm run build
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma deploy && node dist/index.js"]
