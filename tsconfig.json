@@ -1,16 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ESNext",
     "module": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "NodeNext",
-    "typeRoots": ["./types", "./node_modules/@types"],
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": [
+      "node",
+      "express",
+      "bcrypt",
+      "jsonwebtoken",
+      "passport",
+      "passport-google-oauth20"
+    ]
   },
-  "include": ["src", "types"],
+  "include": ["src/**/*", "src/types/express.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

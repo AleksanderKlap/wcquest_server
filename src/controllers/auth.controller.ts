@@ -4,6 +4,7 @@ import { generateToken } from "../services/jwt";
 import bcrypt from "bcrypt";
 import passport from "../config/passport";
 import CustomError from "../errors/custom-error.error";
+import { User as PrismaUser } from "@prisma/client";
 
 export const register = async (
   req: Request,
@@ -46,7 +47,7 @@ export const googleAuthCallback = async (
   next: NextFunction
 ) => {
   try {
-    const user = req.user!;
+    const user = req.user! as PrismaUser;
     if (!user) {
       throw new CustomError("Authentication failed: No User Found", 401);
     }
