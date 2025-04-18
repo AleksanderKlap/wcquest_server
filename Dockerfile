@@ -4,7 +4,8 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npx prisma generate
-RUN npm run build --verbose
-RUN npm install prisma --global
+RUN npm run build 
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]

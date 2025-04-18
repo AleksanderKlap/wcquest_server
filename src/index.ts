@@ -5,11 +5,13 @@ import { authRouter } from "./routes/auth.routes";
 import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
+import { logger, errorLogger } from "./config/winston.config";
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
+app.use(logger);
 app.use(authRouter);
 
 app.get("/", (req: Request, res: Response) => {

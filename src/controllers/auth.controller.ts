@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../prisma";
 import { generateToken } from "../services/jwt";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import passport from "../config/passport";
 import CustomError from "../errors/custom-error.error";
 import { User as PrismaUser } from "@prisma/client";
