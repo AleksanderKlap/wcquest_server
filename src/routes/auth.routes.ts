@@ -10,7 +10,8 @@ import passport from "../config/passport";
 
 const router = express.Router();
 
-router.post("/register", registerSchema, validate, register);
+// router.post("/register", registerSchema, validate, register);
+router.post("/register", register);
 router.get("/auth/google", googleAuth);
 router.get(
   "/auth/google/callback",
