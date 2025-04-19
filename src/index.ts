@@ -6,10 +6,14 @@ import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
 import { logger, errorLogger } from "./config/winston.config";
+import swaggerSpec from "./config/swagger.config";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.json());
 app.use(logger);
 app.use(authRouter);
