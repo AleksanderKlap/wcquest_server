@@ -18,7 +18,6 @@ app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the WC Quest Server!" });
 });
 
-// Health endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "healthy" });
 });
