@@ -12,6 +12,9 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
+        url: "https://wcquestserver-production.up.railway.app",
+      },
+      {
         url: "http://localhost:3000",
       },
     ],
