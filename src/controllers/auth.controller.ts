@@ -12,12 +12,11 @@ export const register = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
+    if (existingUser)
       throw new CustomError("This email is already in use", 400);
-    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
@@ -38,6 +37,32 @@ export const register = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new CustomError("Invalid email or password.", 401);
+    const isMatch = await bcrypt.compare(password, user.password!);
+    if (!isMatch) throw new CustomError("Invalid email or password.", 401);
+    const jwttoken = generateToken({
+      id: user.id,
+      email: user.email,
+    });
+    res.status(200).json({
+      message: "Login succesfull",
+      jwttoken,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+  } catch (error) {}
 };
 
 // export const verifyEmail = async (
