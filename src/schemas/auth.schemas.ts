@@ -18,10 +18,9 @@ const registerInput = {
 const registerSuccessResponse = {
   type: "object",
   properties: {
-    token: {
+    message: {
       type: "string",
-      example:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWF0IjoxNzQ1MDUzMjkxLCJleHAiOjE3NDUwNjA0OTF9.hM1x8Yg3avz9alajiPQ9XUwASwFZ3ejk594doV0Pqso",
+      example: "Registration succesfull, you can login now",
     },
     user: {
       type: "object",

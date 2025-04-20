@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import passport from "../config/passport";
 import CustomError from "../errors/custom-error.error";
 import { User as PrismaUser } from "@prisma/client";
+// import { sendVerificationEmail } from "../services/verify-email.service";
 
 export const register = async (
   req: Request,
@@ -24,9 +25,11 @@ export const register = async (
         password: hashedPassword,
       },
     });
-    const token = generateToken({ id: user.id, email: user.email });
+    // const token = generateEmailToken(email);
+    // await sendVerificationEmail(email, token);
+    // token = generateToken({ id: user.id, email: user.email });
     res.status(201).json({
-      token,
+      message: "Registration succesfull, you can login now",
       user: {
         id: user.id,
         email: user.email,
@@ -36,6 +39,28 @@ export const register = async (
     next(error);
   }
 };
+
+// export const verifyEmail = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<void> => {
+//   const { token } = req.query;
+//   try {
+//     const email = verifyEmailToken(token as string);
+//     const user = await prisma.user.findUnique({ where: { email } });
+//     if (!user) throw new CustomError("Email not found", 404);
+//     await prisma.user.update({
+//       where: { email },
+//       data: { email_verified: true },
+//     });
+//     res.status(200).json({
+//       message: "email verified, you can login now",
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const googleAuth = passport.authenticate("google", {
   scope: ["profile", "email"],

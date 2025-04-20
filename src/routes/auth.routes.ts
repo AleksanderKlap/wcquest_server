@@ -39,5 +39,6 @@ router.get(
   passport.authenticate("google", { session: false }),
   googleAuthCallback
 );
+// router.get("verify-email", verifyEmail);
 
 export { router as authRouter };
