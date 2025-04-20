@@ -3,7 +3,6 @@ import {
   googleAuth,
   googleAuthCallback,
   register,
-  verifyEmail,
 } from "../controllers/auth.controller";
 import { registerSchema } from "../validation_schemas/register.schema";
 import { validate } from "../middleware/validate";
