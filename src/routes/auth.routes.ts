@@ -3,6 +3,7 @@ import {
   googleAuth,
   googleAuthCallback,
   register,
+  verifyEmail,
 } from "../controllers/auth.controller";
 import { registerSchema } from "../validation_schemas/register.schema";
 import { validate } from "../middleware/validate";
@@ -39,5 +40,6 @@ router.get(
   passport.authenticate("google", { session: false }),
   googleAuthCallback
 );
+// router.get("verify-email", verifyEmail);
 
 export { router as authRouter };
