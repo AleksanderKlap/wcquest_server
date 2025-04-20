@@ -3,8 +3,12 @@ import {
   googleAuth,
   googleAuthCallback,
   register,
+  login,
 } from "../controllers/auth.controller";
-import { registerSchema } from "../validation_schemas/register.schema";
+import {
+  loginSchema,
+  registerSchema,
+} from "../validation_schemas/register.schema";
 import { validate } from "../middleware/validate";
 import passport from "../config/passport";
 
@@ -33,6 +37,31 @@ const router = express.Router();
  *        description: Email is already in use OR email is not in email format OR password is less than 6 characters OR password do not contain at least 1 uppercase letter OR password do not contain at least 1 number
  */
 router.post("/register", registerSchema, validate, register);
+
+/**
+ * @openapi
+ * /login:
+ *  post:
+ *    tags:
+ *      - Login
+ *    summary: Endpoint to login user, returns jwt token and user data
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/LoginInput'
+ *    responses:
+ *      200:
+ *        description: Login succesfull
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/LoginSuccessResponse'
+ *      400:
+ *        description: Input validation error
+ */
+router.post("/login", loginSchema, validate, login);
 router.get("/auth/google", googleAuth);
 router.get(
   "/auth/google/callback",
