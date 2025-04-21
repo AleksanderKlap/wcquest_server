@@ -5,9 +5,12 @@ import { authRouter } from "./routes/auth.routes";
 import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
-import { logger, errorLogger } from "./config/winston.config";
+import { logger } from "./config/winston.config";
 import swaggerSpec from "./config/swagger.config";
 import swaggerUi from "swagger-ui-express";
+
+import { generateToken, UserPayload } from "./services/jwt.service";
+import verifyJWT from "./middleware/auth.middleware";
 
 dotenv.config();
 const app = express();
@@ -22,13 +25,21 @@ app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the WC Quest Server!" });
 });
 
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", async (req: Request, res: Response) => {
   res.json({ status: "healthy" });
 });
 
 app.get("/users", async (req: Request, res: Response) => {
   const users = await prisma.user.findMany();
   res.json(users);
+});
+
+app.use(verifyJWT);
+app.get("/protected", async (req: Request, res: Response) => {
+  res.json({
+    message:
+      "this endpoint is protected and u got here because of ur valid token ;)",
+  });
 });
 
 app.use(routeNotFound);
