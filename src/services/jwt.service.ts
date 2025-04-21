@@ -1,6 +1,8 @@
-import jwt from "jsonwebtoken";
+import { User } from "@prisma/client";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import CustomError from "../errors/custom-error.error";
 
-interface UserPayload {
+export interface UserPayload {
   id: number;
   email: string;
 }
