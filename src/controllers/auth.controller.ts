@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import passport from "../config/passport";
 import CustomError from "../errors/custom-error.error";
 import { User as PrismaUser } from "@prisma/client";
+import { text } from "stream/consumers";
 // import { sendVerificationEmail } from "../services/verify-email.service";
 
 export const register = async (
@@ -18,20 +19,26 @@ export const register = async (
     if (existingUser)
       throw new CustomError("This email is already in use", 400);
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-      },
+    const created = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+        },
+      });
+      const profile = await tx.profile.create({
+        data: {
+          userId: user.id,
+        },
+      });
+      return { user, profile };
     });
-    // const token = generateEmailToken(email);
-    // await sendVerificationEmail(email, token);
-    // token = generateToken({ id: user.id, email: user.email });
+
     res.status(201).json({
       message: "Registration succesfull, you can login now",
       user: {
-        id: user.id,
-        email: user.email,
+        id: created.user.id,
+        email: created.user.email,
       },
     });
   } catch (error) {
