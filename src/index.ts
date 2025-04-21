@@ -9,8 +9,8 @@ import { logger } from "./config/winston.config";
 import swaggerSpec from "./config/swagger.config";
 import swaggerUi from "swagger-ui-express";
 
-import { generateToken, UserPayload } from "./services/jwt.service";
 import verifyJWT from "./middleware/auth.middleware";
+import { profileRouter } from "./routes/profile.routes";
 
 dotenv.config();
 const app = express();
@@ -20,6 +20,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.json());
 app.use(logger);
 app.use(authRouter);
+app.use(profileRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the WC Quest Server!" });
