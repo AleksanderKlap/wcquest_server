@@ -1,7 +1,7 @@
 import { Express, Request, Response } from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import authSchemas from "../schemas/auth.schemas";
+import authSchemas from "../openapi-schemas/auth.schema";
 
 const options: swaggerJsdoc.Options = {
   definition: {

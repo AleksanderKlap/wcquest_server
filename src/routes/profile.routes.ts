@@ -1,9 +1,17 @@
-import express from "express";
+import { Router } from "express";
 import { updateProfile } from "../controllers/profile.controller";
 import verifyJWT from "../middleware/auth.middleware";
+import { updateProfileSchema } from "../validation/profile.validation";
+import { validate } from "../middleware/validate.middleware";
 
-const router = express.Router();
+const router = Router();
 
-router.post("/updateprofile", verifyJWT, updateProfile);
+router.post(
+  "/updateprofile",
+  updateProfileSchema,
+  validate,
+  verifyJWT,
+  updateProfile
+);
 
 export { router as profileRouter };
