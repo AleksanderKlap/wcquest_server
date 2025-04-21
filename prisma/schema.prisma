@@ -22,4 +22,13 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   // email_verified Boolean  @default(false)
+  profile    Profile?
+}
+
+model Profile {
+  id       Int     @id @default(autoincrement())
+  username String  @default("wcquest_user")
+  bio      String? @default("I love this app")
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int     @unique
 }

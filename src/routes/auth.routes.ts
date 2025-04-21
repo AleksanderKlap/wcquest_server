@@ -5,11 +5,8 @@ import {
   register,
   login,
 } from "../controllers/auth.controller";
-import {
-  loginSchema,
-  registerSchema,
-} from "../validation_schemas/register.schema";
-import { validate } from "../middleware/validate";
+import { loginSchema, registerSchema } from "../validation/auth.validation";
+import { validate } from "../middleware/validate.middleware";
 import passport from "../config/passport";
 
 const router = express.Router();

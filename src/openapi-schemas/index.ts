@@ -1,4 +1,4 @@
-import authSchemas from "./auth.schemas";
+import authSchemas from "./auth.schema";
 
 const schemas = {
   ...authSchemas,
