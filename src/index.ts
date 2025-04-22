@@ -5,20 +5,21 @@ import { authRouter } from "./routes/auth.routes";
 import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
-import { logger } from "./config/winston.config";
-import swaggerSpec from "./config/swagger.config";
 import swaggerUi from "swagger-ui-express";
 
 import verifyJWT from "./middleware/auth.middleware";
 import { profileRouter } from "./routes/profile.routes";
+import { getOpenApiDocumentation } from "./docs/openapi.docs";
+
+import * as yaml from "yaml";
+import * as fs from "fs";
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(getOpenApiDocumentation()));
 app.use(express.json());
-app.use(logger);
 app.use(authRouter);
 app.use(profileRouter);
 

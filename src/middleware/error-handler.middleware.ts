@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import CustomError from "../errors/custom-error.error";
+import { ZodError } from "zod";
 
 export function routeNotFound(
   req: Request,
@@ -18,6 +19,7 @@ export default function errorHandler(
   if (err instanceof CustomError) {
     res.status(err.statusCode).json({
       error: err.message,
+      cause: err.cause,
     });
     return;
   }

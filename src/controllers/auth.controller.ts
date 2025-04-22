@@ -17,7 +17,7 @@ export const register = async (
     const { email, password } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser)
-      throw new CustomError("This email is already in use", 400);
+      throw new CustomError("This email is already in use", 409);
     const hashedPassword = await bcrypt.hash(password, 10);
     const created = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
