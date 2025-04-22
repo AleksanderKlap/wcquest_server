@@ -1,19 +1,27 @@
-import { registerRequest, registerResponse } from "../schemas/auth.schema";
+import {
+  loginRequest,
+  loginResponse,
+  registerRequest,
+  registerResponse,
+} from "../schemas/auth.schema";
 import { registry } from "./registry.docs";
 
 registry.register("RegisterRequest", registerRequest);
 registry.register("RegisterResponse", registerResponse);
+registry.register("LoginRequest", loginRequest);
+registry.register("LoginResponse", loginResponse);
 
 registry.registerPath({
   method: "post",
   path: "/register",
   tags: ["Auth"],
-  description: "Register new User with email and password",
+  description:
+    "Register new User with email and password. With account creation the default user profile is created.",
   request: {
     params: registerRequest,
   },
   responses: {
-    200: {
+    201: {
       description: "Registration Succesfull",
       content: {
         "application/json": {
@@ -21,32 +29,39 @@ registry.registerPath({
         },
       },
     },
+    409: {
+      description: "This email is already registered",
+    },
+    400: {
+      description:
+        "Validation of request body failed. Read error cause for details",
+    },
   },
 });
 
-// export const authPaths = {
-//   "/register": {
-//     post: {
-//       summary: "meme",
-//       tags: ["Auth"],
-//       requestBody: {
-//         required: true,
-//         content: {
-//           "application/json": {
-//             schema: registerRequest,
-//           },
-//         },
-//       },
-//       responses: {
-//         200: {
-//           description: "Account created",
-//           content: {
-//             "application/json": {
-//               schema: registerResponse,
-//             },
-//           },
-//         },
-//       },
-//     },
-//   },
-// };
+registry.registerPath({
+  method: "post",
+  path: "/login",
+  tags: ["Auth"],
+  description: "Start session with registered user",
+  request: {
+    params: loginRequest,
+  },
+  responses: {
+    200: {
+      description: "Login succesfull - session started",
+      content: {
+        "application/json": {
+          schema: loginResponse,
+        },
+      },
+    },
+    401: {
+      description: "Invalid email or password",
+    },
+    400: {
+      description:
+        "Validation of request body failed. Read error cause for details",
+    },
+  },
+});
