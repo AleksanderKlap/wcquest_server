@@ -5,7 +5,9 @@ import {
   openApiServers,
   openApiTags,
 } from "../config/docs.config";
+import "./components.docs";
 import "./auth.docs";
+import "./profile.docs";
 
 export function getOpenApiDocumentation() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
