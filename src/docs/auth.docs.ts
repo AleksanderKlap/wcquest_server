@@ -18,7 +18,13 @@ registry.registerPath({
   description:
     "Register new User with email and password. With account creation the default user profile is created.",
   request: {
-    params: registerRequest,
+    body: {
+      content: {
+        "application/json": {
+          schema: registerRequest,
+        },
+      },
+    },
   },
   responses: {
     201: {
@@ -45,7 +51,13 @@ registry.registerPath({
   tags: ["Auth"],
   description: "Start session with registered user",
   request: {
-    params: loginRequest,
+    body: {
+      content: {
+        "application/json": {
+          schema: loginRequest,
+        },
+      },
+    },
   },
   responses: {
     200: {

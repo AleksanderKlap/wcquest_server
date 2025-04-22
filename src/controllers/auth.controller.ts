@@ -51,25 +51,24 @@ export const login = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const { email, password } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new CustomError("Invalid email or password.", 401);
-    const isMatch = await bcrypt.compare(password, user.password!);
-    if (!isMatch) throw new CustomError("Invalid email or password.", 401);
-    const jwttoken = generateToken({
+  const { email, password } = req.body;
+  console.log("here:", email);
+  const user = await prisma.user.findUnique({ where: { email: email } });
+  if (!user) throw new CustomError("Invalid email or password.", 401);
+  const isMatch = await bcrypt.compare(password, user.password!);
+  if (!isMatch) throw new CustomError("Invalid email or password.", 401);
+  const jwttoken = generateToken({
+    id: user.id,
+    email: user.email,
+  });
+  res.status(200).json({
+    message: "Login succesfull",
+    jwttoken,
+    user: {
       id: user.id,
       email: user.email,
-    });
-    res.status(200).json({
-      message: "Login succesfull",
-      jwttoken,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-    });
-  } catch (error) {}
+    },
+  });
 };
 
 // export const verifyEmail = async (
