@@ -27,7 +27,6 @@ export const registerResponse = z.object({
     example: "Registration Succesfull",
   }),
   user: z.object({
-    id: z.number().openapi({ example: 132 }),
     email: z.string().email().openapi({ example: "example@gmail.com" }),
   }),
 });
