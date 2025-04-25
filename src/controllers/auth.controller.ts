@@ -26,7 +26,7 @@ export const register = async (
     });
     const profile = await tx.profile.create({
       data: {
-        userId: user.id,
+        user_id: user.id,
       },
     });
     return { user, profile };
