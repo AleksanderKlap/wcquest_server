@@ -17,20 +17,23 @@ passport.use(
         }
         let user = await prisma.user.findFirst({
           where: {
-            OR: [{ googleId: profile.id }, { email: profile.emails![0].value }],
+            OR: [
+              { google_id: profile.id },
+              { email: profile.emails![0].value },
+            ],
           },
         });
         if (!user) {
           user = await prisma.user.create({
             data: {
               email: profile.emails![0].value,
-              googleId: profile.id,
+              google_id: profile.id,
             },
           });
-        } else if (!user.googleId) {
+        } else if (!user.google_id) {
           user = await prisma.user.update({
             where: { email: profile.emails![0].value },
-            data: { googleId: profile.id },
+            data: { google_id: profile.id },
           });
         }
         return done(null, user);
