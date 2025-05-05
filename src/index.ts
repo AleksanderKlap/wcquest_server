@@ -13,6 +13,7 @@ import { getOpenApiDocumentation } from "./docs/openapi.docs";
 
 import * as yaml from "yaml";
 import * as fs from "fs";
+import { toiletRouter } from "./routes/toilet.routes";
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ const port = process.env.PORT || 3000;
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(getOpenApiDocumentation()));
 app.use(express.json());
 app.use(authRouter);
+app.use(toiletRouter);
 app.use(profileRouter);
 
 app.get("/", (req: Request, res: Response) => {
