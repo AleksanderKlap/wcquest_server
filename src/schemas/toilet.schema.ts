@@ -4,7 +4,7 @@ import { Paid } from "@prisma/client";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 extendZodWithOpenApi(z);
 
-export const createToiletRequest = z.object({
+const createToiletRequest = z.object({
   name: z
     .string()
     .trim()
@@ -21,6 +21,17 @@ export const createToiletRequest = z.object({
   features_ids: z
     .array(z.number().int().positive())
     .optional()
-    .openapi({ example: [1, 4, 2] }),
+    .openapi({ example: [1, 3, 2] }),
 });
 export type CreateToiletRequest = z.infer<typeof createToiletRequest>;
+
+const createToiletResponse = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  paid: z.nativeEnum(Paid),
+  latitude: z.number(),
+  longitude: z.number(),
+  features: z.array(z.number()).optional(),
+});
+export type CreateToiletResponse = z.infer<typeof createToiletResponse>;

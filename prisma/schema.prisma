@@ -18,7 +18,7 @@ model User {
   password   String?
   updated_at DateTime @updatedAt
   profile    Profile?
-  toilet     Toilet?
+  toilet     Toilet[]
 }
 
 model Profile {
@@ -34,7 +34,7 @@ model Toilet {
   name           String
   description    String?
   location       Unsupported("postgis.geography(Point, 4326)")
-  created_by     Int                                           @unique
+  created_by     Int
   user           User                                          @relation(fields: [created_by], references: [id])
   paid           Paid                                          @default(FREE)
   created_at     DateTime                                      @default(now())
