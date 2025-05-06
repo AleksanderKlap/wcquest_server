@@ -1,22 +1,16 @@
 import { Request, Response } from "express";
-import prisma from "../prisma";
+import prisma, { p } from "../prisma";
+import { Paid } from "@prisma/client";
 
 export const addtoilet = async (req: Request, res: Response) => {
-  const id = req.authUser?.id;
-  const {
-    name,
-    description,
-    created_by,
-    latitude,
-    longitude,
-    paid,
-    features_ids,
-  } = req.body;
+  const id = req.authUser!.id;
+  const { name, description, latitude, longitude, paid, features_ids } =
+    req.body;
   const toilet = await prisma.toilet.create({
     name: name,
     description: description,
-    created_by: created_by,
     latitude: latitude,
+    created_by: id,
     longitude: longitude,
     paid: paid,
     features_ids: features_ids,
