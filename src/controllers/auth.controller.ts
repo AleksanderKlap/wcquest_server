@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import prisma from "../prisma";
+import prisma from "../config/prisma/prisma";
 import { generateToken } from "../services/jwt.service";
 import bcrypt from "bcryptjs";
 import passport from "../config/passport";

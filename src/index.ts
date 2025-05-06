@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import prisma from "./prisma";
+import prisma from "./config/prisma/prisma";
 import { authRouter } from "./routes/auth.routes";
 import errorHandler, {
   routeNotFound,

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma, { p } from "../prisma";
+import prisma, { p } from "../config/prisma/prisma";
 import { Paid } from "@prisma/client";
 
 export const addtoilet = async (req: Request, res: Response) => {

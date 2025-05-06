@@ -1,12 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import {
   CreateToiletRequest,
   CreateToiletResponse,
-} from "./schemas/toilet.schema";
-import CustomError from "./errors/custom-error.error";
+} from "../../../../schemas/toilet.schema";
+import CustomError from "../../../../errors/custom-error.error";
 
-export const p = new PrismaClient();
-const prisma = p.$extends({
+const prisma = new PrismaClient();
+
+export const createToiletExtention = Prisma.defineExtension({
+  name: "createToiletExtention",
   model: {
     toilet: {
       async create(
@@ -32,7 +34,6 @@ const prisma = p.$extends({
               })),
             });
           }
-
           const features =
             data.features_ids && data.features_ids.length > 0
               ? await tx.feature.findMany({
@@ -40,7 +41,6 @@ const prisma = p.$extends({
                   select: { id: true, name: true, description: true },
                 })
               : [];
-
           return {
             id: insertedId,
             name: data.name,
@@ -57,4 +57,3 @@ const prisma = p.$extends({
     },
   },
 });
-export default prisma;

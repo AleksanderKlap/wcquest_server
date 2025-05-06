@@ -41,3 +41,15 @@ const createToiletResponse = z.object({
   features: z.array(featureSchema),
 });
 export type CreateToiletResponse = z.infer<typeof createToiletResponse>;
+
+const toiletSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  paid: z.nativeEnum(Paid),
+  latitude: z.number(),
+  longitude: z.number(),
+  created_by: z.number(),
+  features: z.array(featureSchema),
+});
+export type ToiletSchema = z.infer<typeof toiletSchema>;
