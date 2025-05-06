@@ -1,51 +1,29 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import prisma from "./config/prisma/prisma";
-import { authRouter } from "./routes/auth.routes";
 import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
 import swaggerUi from "swagger-ui-express";
-
 import verifyJWT from "./middleware/auth.middleware";
-import { profileRouter } from "./routes/profile.routes";
-import { getOpenApiDocumentation } from "./docs/openapi.docs";
-
-import * as yaml from "yaml";
-import * as fs from "fs";
-import { toiletRouter } from "./routes/toilet.routes";
+import { getOpenApiDocumentation } from "./api/v1/docs/openapi.docs";
+import v1router from "./api/v1/routes";
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(getOpenApiDocumentation()));
+app.use(
+  "/api/v1/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(getOpenApiDocumentation())
+);
 app.use(express.json());
-app.use(authRouter);
-app.use(toiletRouter);
-app.use(profileRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the WC Quest Server!" });
 });
 
-app.get("/health", async (req: Request, res: Response) => {
-  res.json({ status: "healthy" });
-});
-
-app.get("/users", async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
-
-app.use(verifyJWT);
-app.get("/protected", async (req: Request, res: Response) => {
-  res.json({
-    message:
-      "this endpoint is protected and u got here because of ur valid token ;)",
-  });
-});
-
+app.use("/api/v1", v1router);
 app.use(routeNotFound);
 app.use(errorHandler);
 
