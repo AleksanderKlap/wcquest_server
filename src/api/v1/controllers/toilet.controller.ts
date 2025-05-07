@@ -1,7 +1,10 @@
 import db from "../../../config/database";
 import { Request, Response } from "express";
 import { toilet, toiletToFeatures } from "../../../db/schemas/schema";
-import { CreateToiletRequest, ToiletSchema } from "../schemas/toilet.schema";
+import {
+  CreateToiletRequest,
+  CreateToiletResponse,
+} from "../schemas/toilet.schema";
 import { eq } from "drizzle-orm";
 import CustomError from "../../../errors/custom-error.error";
 
@@ -49,7 +52,7 @@ export const createToilet = async (req: Request, res: Response) => {
     return inserted;
   });
   if (!created) throw new CustomError("Failed inserting new toilet", 500);
-  const response: ToiletSchema = {
+  const response: CreateToiletResponse = {
     id: created.id,
     name: created.name,
     description: created.description,

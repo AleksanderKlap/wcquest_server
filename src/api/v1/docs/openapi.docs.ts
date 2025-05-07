@@ -8,6 +8,7 @@ import {
 import "./components.docs";
 import "./auth.docs";
 import "./profile.docs";
+import "./toilet.docs";
 
 export function getOpenApiDocumentation() {
   const generator = new OpenApiGeneratorV3(registry.definitions);

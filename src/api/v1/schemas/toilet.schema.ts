@@ -35,31 +35,49 @@ const featureSchema = z.object({
 });
 export type FeatureSchema = z.infer<typeof featureSchema>;
 
-const createToiletResponse = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-  paid: z.nativeEnum(Paid),
-  latitude: z.number(),
-  longitude: z.number(),
-  features: z.array(featureSchema),
-});
-export type CreateToiletResponse = z.infer<typeof createToiletResponse>;
+// const createToiletResponse = z.object({
+//   id: z.number(),
+//   name: z.string(),
+//   description: z.string(),
+//   paid: z.nativeEnum(Paid),
+//   latitude: z.number(),
+//   longitude: z.number(),
+//   features: z.array(featureSchema),
+// });
+// export type CreateToiletResponse = z.infer<typeof createToiletResponse>;
 
-const toiletSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-  paid: z.nativeEnum(Paid),
+export const createToiletResponse = z.object({
+  id: z.number().openapi({ example: 42 }),
+  name: z.string().openapi({ example: "McDonald Toilet" }),
+  description: z.string().openapi({ example: "On the second floor" }),
+  paid: z.nativeEnum(Paid).openapi({ example: Paid.FREE }),
   location: z.object({
-    latitude: z.number(),
-    longitude: z.number(),
+    latitude: z.number().openapi({ example: -12.04221 }),
+    longitude: z.number().openapi({ example: 121.04221 }),
   }),
   created_by: z.object({
-    id: z.number(),
-    username: z.string(),
-    bio: z.string(),
+    id: z.number().openapi({ example: 123 }),
+    username: z.string().openapi({ example: "Cool user" }),
+    bio: z.string().openapi({ example: "I love to pee in McDonald" }),
   }),
-  features: z.array(featureSchema),
+  features: z.array(featureSchema).openapi({
+    example: [
+      {
+        id: 1,
+        name: "Feature 1",
+        description: null,
+      },
+      {
+        id: 2,
+        name: "Feature 2",
+        description: null,
+      },
+      {
+        id: 3,
+        name: "Feature 3",
+        description: null,
+      },
+    ],
+  }),
 });
-export type ToiletSchema = z.infer<typeof toiletSchema>;
+export type CreateToiletResponse = z.infer<typeof createToiletResponse>;

@@ -10,7 +10,7 @@ registry.register("UpdateProfileResponse", updateProfileResponse);
 
 registry.registerPath({
   method: "patch",
-  path: "/updateprofile",
+  path: "/api/v1/profile",
   tags: ["Profile"],
   security: [{ bearerAuth: [] }],
   description:

@@ -13,7 +13,7 @@ registry.register("LoginResponse", loginResponse);
 
 registry.registerPath({
   method: "post",
-  path: "/register",
+  path: "/api/v1/auth/register",
   tags: ["Auth"],
   description:
     "Register new User with email and password. With account creation the default user profile is created.",
@@ -47,7 +47,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/login",
+  path: "/api/v1/auth/login",
   tags: ["Auth"],
   description: "Start session with registered user",
   request: {
