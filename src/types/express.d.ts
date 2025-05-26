@@ -8,3 +8,13 @@ declare global {
     }
   }
 }
+// declare module "@prisma/client" {
+//   interface Toilet {
+//     location: Geolocation;
+//   }
+// }
+
+// export type Geolocation = {
+//   latitude: number;
+//   longitude: number;
+// };

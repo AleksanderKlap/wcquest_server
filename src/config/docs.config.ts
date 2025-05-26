@@ -19,4 +19,8 @@ export const openApiTags = [
     description: "Authentication endpoints",
   },
   { name: "Profile", description: "User profile endpoints" },
+  {
+    name: "Toilet",
+    description: "Toilet endpoints",
+  },
 ];
