@@ -1,4 +1,3 @@
-import { User } from "@prisma/client";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import CustomError from "../errors/custom-error.error";
 
