@@ -4,7 +4,6 @@ import errorHandler, {
   routeNotFound,
 } from "./middleware/error-handler.middleware";
 import swaggerUi from "swagger-ui-express";
-import verifyJWT from "./middleware/auth.middleware";
 import { getOpenApiDocumentation } from "./api/v1/docs/openapi.docs";
 import v1router from "./api/v1/routes";
 

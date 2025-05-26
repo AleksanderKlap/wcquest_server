@@ -1,5 +1,5 @@
 #!/bin/sh
 
 set -e
-npx prisma migrate deploy
+npx drizzle-kit push
 npm start
