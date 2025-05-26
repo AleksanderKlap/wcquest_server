@@ -35,16 +35,9 @@ const featureSchema = z.object({
 });
 export type FeatureSchema = z.infer<typeof featureSchema>;
 
-// const createToiletResponse = z.object({
-//   id: z.number(),
-//   name: z.string(),
-//   description: z.string(),
-//   paid: z.nativeEnum(Paid),
-//   latitude: z.number(),
-//   longitude: z.number(),
-//   features: z.array(featureSchema),
-// });
-// export type CreateToiletResponse = z.infer<typeof createToiletResponse>;
+export const allFeaturesResponse = z.object({
+  features: z.array(featureSchema),
+});
 
 export const createToiletResponse = z.object({
   id: z.number().openapi({ example: 42 }),
@@ -81,3 +74,51 @@ export const createToiletResponse = z.object({
   }),
 });
 export type CreateToiletResponse = z.infer<typeof createToiletResponse>;
+
+export const boundingBoxQuerySchema = z.object({
+  minlng: z.coerce.number().min(-180).max(180),
+  minlat: z.coerce.number().min(-90).max(90),
+  maxlng: z.coerce.number().min(-180).max(180),
+  maxlat: z.coerce.number().min(-90).max(90),
+  ulng: z.coerce.number().min(-180).max(180).optional(),
+  ulat: z.coerce.number().min(-90).max(90).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(1000).default(20),
+});
+export type BoundingBoxQuerySchema = z.infer<typeof boundingBoxQuerySchema>;
+
+export const getInRadiusQuerySchema = z.object({
+  lng: z.coerce
+    .number()
+    .min(-180)
+    .max(180)
+    .openapi({ example: 4.895168, description: "Longitude of user position" }),
+  lat: z.coerce
+    .number()
+    .min(-90)
+    .max(90)
+    .openapi({ example: 52.370216, description: "Latitude of user position" }),
+  radius: z.coerce.number().positive().openapi({
+    example: 2000,
+    description: "Radius of selecting toilets in meters",
+  }),
+  page: z.coerce.number().int().min(1).optional().default(1).openapi({
+    example: 4,
+    description: "Page number for pagination (default is 1)",
+  }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(20)
+    .openapi({
+      example: 50,
+      description: "Limit of toilets per page (default is 20)",
+    }),
+});
+export type getInRadiusQuerySchema = z.infer<typeof getInRadiusQuerySchema>;
+
+export const getToiletsResponse = z.array(createToiletResponse);
+export type getToiletsResponse = z.infer<typeof getToiletsResponse>;
