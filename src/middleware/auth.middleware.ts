@@ -8,9 +8,16 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
   if (!authHeader) throw new CustomError("No token", 403);
   if (!authHeader.startsWith("Bearer "))
     throw new CustomError("Wrong token format", 403);
+
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
-    if (err) throw new CustomError("Invalid token", 403);
+
+  jwt.verify(token, process.env.JWT_ACCESS_SECRET!, (err, decoded) => {
+    if (err) {
+      if (err.name === "TokenExpiredError")
+        throw new CustomError("Expired token", 401);
+      else throw new CustomError("Invalid Token", 403);
+    }
+
     req.authUser = decoded as UserPayload;
     next();
   });

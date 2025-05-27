@@ -50,9 +50,24 @@ export type LoginRequest = z.infer<typeof loginRequest>;
 export const loginResponse = z.object({
   message: z.string().openapi({ example: "Login succesfull" }),
   token: z.string().openapi({ example: "your_jwt_token_string" }),
+  refreshToken: z
+    .string()
+    .openapi({ example: "your_jwt_refresh_token_string" }),
   user: z.object({
     id: z.number().openapi({ example: 123 }),
     email: z.string().openapi({ example: "example@gmail.com" }),
   }),
 });
 export type LoginResponse = z.infer<typeof loginResponse>;
+
+export const refreshTokenRequest = z.object({
+  refreshToken: z.string().openapi({ example: "your_jwt_token_string" }),
+});
+export type RefreshTokenRequest = z.infer<typeof refreshTokenRequest>;
+
+export const refreshTokenResponse = z.object({
+  message: z.string().openapi({ example: "Refreshing token sucessfull" }),
+  token: z.string().openapi({ example: "your new jwt access token" }),
+  refreshToken: z.string().openapi({ example: "your new jwt refresh token" }),
+});
+export type RefreshTokenResponse = z.infer<typeof refreshTokenResponse>;

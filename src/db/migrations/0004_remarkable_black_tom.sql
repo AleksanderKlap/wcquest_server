@@ -1,0 +1,1 @@
+ALTER TABLE "RefreshToken" DROP COLUMN "client";

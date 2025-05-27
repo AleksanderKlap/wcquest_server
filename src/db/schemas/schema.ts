@@ -29,6 +29,21 @@ export const user = pgTable("User", {
     .$onUpdate(() => new Date()),
 });
 
+export const refreshToken = pgTable("RefreshToken", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => user.id),
+  refreshToken: varchar("refresh_token", { length: 512 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .$onUpdate(() => new Date()),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 export const profile = pgTable("Profile", {
   id: serial("id").primaryKey(),
   username: varchar({ length: 255 }).notNull().default("WCQuest_User;)"),
@@ -88,6 +103,11 @@ export const toiletToFeatures = pgTable(
 export const userRelations = relations(user, ({ one, many }) => ({
   profile: one(profile),
   toilet: many(toilet),
+  refreshToken: many(refreshToken),
+}));
+
+export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
+  user: one(user, { fields: [refreshToken.userId], references: [user.id] }),
 }));
 
 export const profileRelations = relations(profile, ({ one }) => ({
