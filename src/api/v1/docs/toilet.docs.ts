@@ -15,7 +15,6 @@ registry.registerPath({
   method: "get",
   path: "/api/v1/features",
   tags: ["Toilet"],
-  security: [{ bearerAuth: [] }],
   description: "Get all features from the database",
   responses: {
     200: {
@@ -28,9 +27,6 @@ registry.registerPath({
     },
     500: {
       description: "Something went wrong - i dont know yet what sorry",
-    },
-    403: {
-      description: "No JWT token OR malformed JWT token OR expired token",
     },
   },
 });
@@ -66,8 +62,11 @@ registry.registerPath({
       description:
         "Validation of request body failed. Read error cause for details",
     },
+    401: {
+      description: "JWT access token expired - hit /refreshtoken for new one",
+    },
     403: {
-      description: "No JWT token OR malformed JWT token OR expired token",
+      description: "Invalid JWT token",
     },
   },
 });

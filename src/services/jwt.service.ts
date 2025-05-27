@@ -1,5 +1,4 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import CustomError from "../errors/custom-error.error";
 
 export interface UserPayload {
   id: number;
@@ -7,17 +6,31 @@ export interface UserPayload {
 }
 
 export const generateToken = (user: UserPayload): string => {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, {
-    expiresIn: "2h",
-  });
+  return jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_ACCESS_SECRET!,
+    {
+      expiresIn: "2h",
+    }
+  );
+};
+
+export const generateRefreshToken = (user: UserPayload): string => {
+  return jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_REFRESH_SECRET!,
+    { expiresIn: "30d" }
+  );
 };
 
 export const generateEmailToken = (email: string): string => {
-  return jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: "12h" });
+  return jwt.sign({ email }, process.env.JWT_ACCESS_SECRET!, {
+    expiresIn: "12h",
+  });
 };
 
 export const verifyEmailToken = (token: string): string => {
-  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+  const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as {
     email: string;
   };
   return decoded.email;

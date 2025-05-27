@@ -37,8 +37,11 @@ registry.registerPath({
       description:
         "Validation of request body failed. Read error cause for details",
     },
+    401: {
+      description: "JWT access token expired - hit /refreshtoken for new one",
+    },
     403: {
-      description: "No JWT token OR malformed JWT token OR expired token",
+      description: "Invalid JWT token",
     },
   },
 });

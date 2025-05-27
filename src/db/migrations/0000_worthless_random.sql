@@ -1,4 +1,6 @@
-CREATE TYPE "public"."Paid" AS ENUM('FREE', 'PAID');--> statement-breakpoint
+CREATE TYPE "public"."Paid" AS ENUM('FREE', 'PAID');
+--> statement-breakpoint
+
 CREATE TABLE "Feature" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,

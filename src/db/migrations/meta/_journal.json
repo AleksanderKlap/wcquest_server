@@ -22,6 +22,41 @@
       "when": 1746539860566,
       "tag": "0002_clear_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1748345624570,
+      "tag": "0003_elite_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1748347410829,
+      "tag": "0004_remarkable_black_tom",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1748347450173,
+      "tag": "0005_lumpy_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748348086016,
+      "tag": "0006_marvelous_patch",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748352777975,
+      "tag": "0007_fat_swordsman",
+      "breakpoints": true
     }
   ]
 }
