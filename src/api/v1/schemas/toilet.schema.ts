@@ -152,6 +152,15 @@ export const photoSchema = z.object({
   }),
 });
 
+export const avgRatings = z.object({
+  toiletId: z.number().openapi({ example: 2 }),
+  avgCleanliness: z.number().min(1).max(5).openapi({ example: 2 }),
+  avgAccessibility: z.number().min(1).max(5).openapi({ example: 2 }),
+  avgLocation: z.number().min(1).max(5).openapi({ example: 3 }),
+  avgRating: z.number().min(1).max(5).openapi({ example: 2.33 }),
+  totalRatings: z.number().openapi({ example: 3 }),
+});
+
 export const toiletResponse = z.object({
   id: z.number().openapi({ example: 42 }),
   name: z.string().openapi({ example: "McDonald Toilet" }),
@@ -197,7 +206,6 @@ export const toiletResponse = z.object({
   }),
 });
 export type ToiletResponse = z.infer<typeof toiletResponse>;
-
 export type ToiletResponseWithDistance = ToiletResponse & {
   distance: number | null;
 };
@@ -216,3 +224,10 @@ export const toiletWithQuery = {
 } as const;
 
 export type ToiletWithRelations = Awaited<ReturnType<typeof getToiletById>>;
+
+export const ratingRequest = z.object({
+  rating_cleanliness: z.number().openapi({ example: 1 }),
+  rating_accessibility: z.number().openapi({ example: 3 }),
+  rating_location: z.number().openapi({ example: 5 }),
+});
+export type RatingRequest = z.infer<typeof ratingRequest>;

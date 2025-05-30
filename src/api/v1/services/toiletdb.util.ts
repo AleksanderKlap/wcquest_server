@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import db from "../../../config/database";
-import { toilet, toiletPhoto } from "../../../db/schemas/schema";
+import { toilet, toiletPhoto, toiletRating } from "../../../db/schemas/schema";
 import {
   ToiletResponse,
   ToiletResponseWithDistance,
@@ -192,4 +192,24 @@ export const insertToiletPhotoRecord = async (
     })
     .returning();
   return returning;
+};
+
+export const insertToiletRatingRecord = async (
+  toiletId: number,
+  userId: number,
+  rating_cleanliness: number,
+  rating_accessibility: number,
+  rating_location: number
+) => {
+  const returning = await db
+    .insert(toiletRating)
+    .values({
+      userId,
+      toiletId,
+      rating_cleanliness,
+      rating_accessibility,
+      rating_location,
+    })
+    .returning();
+  return returning ? returning : null;
 };

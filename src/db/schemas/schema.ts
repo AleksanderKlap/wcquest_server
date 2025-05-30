@@ -1,4 +1,5 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import { QueryBuilder } from "drizzle-orm/gel-core";
 import {
   integer,
   primaryKey,
@@ -10,6 +11,8 @@ import {
   varchar,
   geometry,
   index,
+  check,
+  pgView,
 } from "drizzle-orm/pg-core";
 
 //enums
@@ -79,6 +82,39 @@ export const toilet = pgTable(
   (t) => [index("spatial_index").using("gist", t.location)]
 );
 
+export const toiletRating = pgTable(
+  "ToiletRating",
+  {
+    id: serial("id").primaryKey(),
+    toiletId: integer("toilet_id")
+      .notNull()
+      .references(() => toilet.id),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => user.id),
+    rating_cleanliness: integer().notNull(),
+    rating_accessibility: integer().notNull(),
+    rating_location: integer().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (rating) => [
+    check(
+      "rating_cleanliness_boundry",
+      sql`${rating.rating_cleanliness} BETWEEN 1 AND 5`
+    ),
+    check(
+      "rating_accessibility_boundry",
+      sql`${rating.rating_accessibility} BETWEEN 1 AND 5`
+    ),
+    check(
+      "rating_location_boundry",
+      sql`${rating.rating_location} BETWEEN 1 AND 5`
+    ),
+  ]
+);
+
 export const feature = pgTable("Feature", {
   id: serial("id").primaryKey(),
   name: varchar({ length: 255 }).notNull(),
@@ -122,6 +158,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   toilet: many(toilet),
   refreshToken: many(refreshToken),
   toiletPhoto: many(toiletPhoto),
+  ratings: many(toiletRating),
 }));
 
 export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
@@ -136,6 +173,18 @@ export const toiletRelations = relations(toilet, ({ one, many }) => ({
   user: one(user, { fields: [toilet.createdBy], references: [user.id] }),
   toiletToFeatures: many(toiletToFeatures),
   photos: many(toiletPhoto),
+  ratings: many(toiletRating),
+}));
+
+export const toiletRatingRelations = relations(toiletRating, ({ one }) => ({
+  user: one(user, {
+    fields: [toiletRating.userId],
+    references: [user.id],
+  }),
+  toilet: one(toilet, {
+    fields: [toiletRating.toiletId],
+    references: [toilet.id],
+  }),
 }));
 
 export const toiletPhotoRelations = relations(toiletPhoto, ({ one }) => ({
@@ -162,4 +211,31 @@ export const toiletToFeaturesRelations = relations(
       references: [feature.id],
     }),
   })
+);
+
+// views
+
+export const avgRatingView = pgView("avg_rating_view").as((qb) =>
+  qb
+    .select({
+      toiletId: toiletRating.toiletId,
+      avgCleanliness:
+        sql<number>`ROUND(AVG(${toiletRating.rating_cleanliness}::numeric), 2)`.as(
+          "avg_cleanliness"
+        ),
+      avgAccessibility:
+        sql<number>`ROUND(AVG(${toiletRating.rating_accessibility}::numeric), 2)`.as(
+          "avg_accessibility"
+        ),
+      avgLocation:
+        sql<number>`ROUND(AVG(${toiletRating.rating_location}::numeric), 2)`.as(
+          "avg_location"
+        ),
+      averageRating:
+        sql<number>`ROUND(AVG((${toiletRating.rating_cleanliness} + ${toiletRating.rating_accessibility} + ${toiletRating.rating_location})::numeric / 3), 2)`.as(
+          "avg_rating_overall"
+        ),
+      totalRatings: sql<number>`COUNT(*)`.as("total_ratings"),
+    })
+    .from(toiletRating)
 );
