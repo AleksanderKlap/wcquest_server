@@ -1,15 +1,17 @@
+import z, { any } from "zod";
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import {
   allFeaturesResponse,
   boundingBoxQuerySchema,
   createToiletRequest,
-  createToiletResponse,
   getInRadiusQuerySchema,
-  getToiletsResponse,
+  photoSchema,
+  toiletResponse,
 } from "../schemas/toilet.schema";
 import { registry } from "./registry.docs";
+extendZodWithOpenApi(z);
 
 registry.register("CreateToiletRequest", createToiletRequest);
-registry.register("CreateToiletResponse", createToiletResponse);
 
 registry.registerPath({
   method: "get",
@@ -51,7 +53,7 @@ registry.registerPath({
       description: "Creation of toilet succesfull",
       content: {
         "application/json": {
-          schema: createToiletResponse,
+          schema: toiletResponse,
         },
       },
     },
@@ -85,7 +87,7 @@ registry.registerPath({
       description: "Toilets within the specified radius",
       content: {
         "application/json": {
-          schema: getToiletsResponse,
+          schema: toiletResponse,
         },
       },
     },
@@ -109,12 +111,58 @@ registry.registerPath({
       description: "Toilets within the specified bounding box",
       content: {
         "application/json": {
-          schema: getToiletsResponse,
+          schema: toiletResponse,
         },
       },
     },
     400: {
       description: "Validation of query parameters failed",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/v1/toilet/{id}/photos",
+  tags: ["Toilet"],
+  security: [{ bearerAuth: [] }],
+  description:
+    "Add photos to toilet. U can add max 10 photos and each needs to be less than 5MB. It is not JSON body but multipart/form-data, the files goes into field with key 'toilet-photos' and can be only .jpg extention. This is JWT protected endpoint of course. Base path for Storage is: https://foiaqnktjmvvenvegymc.supabase.co/storage/v1/object/public/toilet-photos/ and than u add photo-url (ex: 18/104937b1-5593-4679-bf54-4b5e12bb7235.jpg) - this way u get photo from server",
+  request: {
+    params: z.object({ id: z.string() }),
+    body: {
+      content: {
+        "multipart/form-data": {
+          schema: z.object({ files: any() }).openapi({
+            properties: {
+              "toilet-photos": {
+                type: "array",
+                items: {
+                  type: "string",
+                  format: "binary",
+                },
+              },
+            },
+            required: ["toilet-photos"],
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Photos uploaded and saved successfully",
+      content: {
+        "application/json": {
+          schema: z.array(photoSchema),
+        },
+      },
+    },
+    400: {
+      description: "Invalid toilet ID, no files uploaded, or file too large",
+    },
+    500: {
+      description: "Uploading to Supabase or DB failed",
     },
   },
 });

@@ -85,6 +85,23 @@ export const feature = pgTable("Feature", {
   description: text("description"),
 });
 
+export const toiletPhoto = pgTable("ToiletPhoto", {
+  id: serial("id").primaryKey(),
+  url: varchar("url").notNull(),
+  toiletId: integer("toilet_id")
+    .notNull()
+    .references(() => toilet.id),
+  userId: integer("created_by")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
 export const toiletToFeatures = pgTable(
   "ToiletToFeature",
   {
@@ -104,6 +121,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   profile: one(profile),
   toilet: many(toilet),
   refreshToken: many(refreshToken),
+  toiletPhoto: many(toiletPhoto),
 }));
 
 export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
@@ -117,6 +135,15 @@ export const profileRelations = relations(profile, ({ one }) => ({
 export const toiletRelations = relations(toilet, ({ one, many }) => ({
   user: one(user, { fields: [toilet.createdBy], references: [user.id] }),
   toiletToFeatures: many(toiletToFeatures),
+  photos: many(toiletPhoto),
+}));
+
+export const toiletPhotoRelations = relations(toiletPhoto, ({ one }) => ({
+  user: one(user, { fields: [toiletPhoto.userId], references: [user.id] }),
+  toilet: one(toilet, {
+    fields: [toiletPhoto.toiletId],
+    references: [toilet.id],
+  }),
 }));
 
 export const featureRelations = relations(feature, ({ one, many }) => ({
