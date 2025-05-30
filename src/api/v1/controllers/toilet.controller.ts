@@ -3,10 +3,33 @@ import { Request, Response } from "express";
 import { toilet, toiletToFeatures } from "../../../db/schemas/schema";
 import {
   CreateToiletRequest,
-  CreateToiletResponse,
+  ToiletResponse,
+  ToiletResponseWithDistance,
+  toiletWithQuery,
 } from "../schemas/toilet.schema";
-import { eq, getTableColumns, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import CustomError from "../../../errors/custom-error.error";
+import {
+  arrayToiletResponseMapper,
+  getToiletById,
+  getToiletsInBBox,
+  getToiletsInRadius,
+  insertToiletPhotoRecord,
+  singleToiletResponseMapper,
+} from "../services/toiletdb.util";
+import { v4 as uuidv4 } from "uuid";
+import { uploadJPGs } from "../services/bucket.util";
+
+export const toiletById = async (req: Request, res: Response) => {
+  const toiletId = parseInt(req.params.id);
+  if (!toiletId) throw new CustomError("Toilet ID is required", 400);
+
+  const found = await getToiletById(toiletId);
+  if (!found) throw new CustomError("Toilet not found", 404);
+
+  const response = singleToiletResponseMapper(found);
+  res.status(200).json(response);
+};
 
 export const createToilet = async (req: Request, res: Response) => {
   const createdBy = req.authUser!.id;
@@ -40,34 +63,13 @@ export const createToilet = async (req: Request, res: Response) => {
 
     const inserted = await tx.query.toilet.findFirst({
       where: eq(toilet.id, newToilet.id),
-      with: {
-        toiletToFeatures: {
-          with: { feature: true },
-        },
-        user: {
-          with: { profile: true },
-        },
-      },
+      with: toiletWithQuery,
     });
     return inserted;
   });
   if (!created) throw new CustomError("Failed inserting new toilet", 500);
-  const response: CreateToiletResponse = {
-    id: created.id,
-    name: created.name,
-    description: created.description,
-    paid: created.paid,
-    location: {
-      latitude: created.location.y,
-      longitude: created.location.x,
-    },
-    created_by: {
-      id: created.user.id,
-      username: created.user.profile!.username,
-      bio: created.user.profile!.bio,
-    },
-    features: created.toiletToFeatures.map((t) => t.feature),
-  };
+  const response: ToiletResponse | null = singleToiletResponseMapper(created);
+  if (!response) throw new CustomError("Toilet not found", 404);
   res.status(200).json(response);
 };
 
@@ -77,48 +79,12 @@ export const getInRadius = async (req: Request, res: Response) => {
   const radius = parseFloat(req.query.radius as string);
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
-  const offset = (page - 1) * limit;
 
-  const point = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`;
+  const result = await getToiletsInRadius(lng, lat, radius, limit, page);
+  if (!result) throw new CustomError("No toilets found in radius", 404);
 
-  const result = await db.query.toilet.findMany({
-    where: sql`ST_DWithin(${toilet.location}::geography, ${point}, ${radius})`,
-    with: {
-      toiletToFeatures: {
-        with: { feature: true },
-      },
-      user: {
-        with: { profile: true },
-      },
-    },
-    orderBy: (toilet, { sql }) =>
-      sql`${toilet.location}::geography<-> ${point}`,
-    extras: {
-      distance: sql`ST_Distance(${toilet.location}::geography, ${point})`.as(
-        "distance"
-      ),
-    },
-    limit,
-    offset,
-  });
-
-  const response = result.map((t) => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    paid: t.paid,
-    location: {
-      latitude: t.location.y,
-      longitude: t.location.x,
-    },
-    distance: t.distance,
-    created_by: {
-      id: t.user.id,
-      username: t.user.profile?.username,
-      bio: t.user.profile?.bio,
-    },
-    features: t.toiletToFeatures.map((tf) => tf.feature),
-  }));
+  const response: ToiletResponseWithDistance[] =
+    arrayToiletResponseMapper(result);
   res.status(200).json(response);
 };
 
@@ -128,79 +94,70 @@ export const getInBoundingBox = async (req: Request, res: Response) => {
   const maxlng = parseFloat(req.query.maxlng as string);
   const maxlat = parseFloat(req.query.maxlat as string);
   //user location - optional
-  const ulng = req.query.ulng ? parseFloat(req.query.ulng as string) : null;
-  const ulat = req.query.ulat ? parseFloat(req.query.ulat as string) : null;
-
-  const userPoint =
-    ulng !== null && ulat !== null
-      ? sql`ST_SetSRID(ST_MakePoint(${ulng}, ${ulat}), 4326)`
-      : null;
-  const bbox = sql`ST_MakeEnvelope(${minlng}, ${minlat}, ${maxlng}, ${maxlat}, 4326)`;
+  const ulng = req.query.ulng
+    ? parseFloat(req.query.ulng as string)
+    : undefined;
+  const ulat = req.query.ulat
+    ? parseFloat(req.query.ulat as string)
+    : undefined;
 
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
-  const offset = (page - 1) * limit;
-  let result;
-  if (userPoint) {
-    result = await db.query.toilet.findMany({
-      where: sql`ST_Within(${toilet.location}, ${bbox})`,
-      with: {
-        toiletToFeatures: {
-          with: { feature: true },
-        },
-        user: {
-          with: { profile: true },
-        },
-      },
-      orderBy: (toilet, { sql }) =>
-        sql`${toilet.location}::geography<-> ${userPoint}`,
-      extras: {
-        distance:
-          sql`ST_Distance(${toilet.location}::geography, ${userPoint})`.as(
-            "distance"
-          ),
-      },
-      limit,
-      offset,
-    });
-  } else {
-    result = await db.query.toilet.findMany({
-      where: sql`ST_Within(${toilet.location}, ${bbox})`,
-      with: {
-        toiletToFeatures: {
-          with: { feature: true },
-        },
-        user: {
-          with: { profile: true },
-        },
-      },
-      extras: {
-        distance:
-          sql`ST_Distance(${toilet.location}::geography, ${userPoint})`.as(
-            "distance"
-          ),
-      },
-      limit,
-      offset,
-    });
+
+  const result = await getToiletsInBBox(
+    minlng,
+    minlat,
+    maxlng,
+    maxlat,
+    ulng,
+    ulat,
+    limit,
+    page
+  );
+
+  const response: ToiletResponseWithDistance[] =
+    arrayToiletResponseMapper(result);
+  res.status(200).json(response);
+};
+
+export const uploadToiletPhotos = async (req: Request, res: Response) => {
+  const userId = req.authUser!.id;
+
+  const toiletId = req.params.id;
+  if (!toiletId) throw new CustomError("Toilet ID not provided", 400);
+
+  const toiletIdNumber = parseInt(toiletId);
+  if (isNaN(toiletIdNumber)) throw new CustomError("Invalid toilet ID", 400);
+
+  const files = req.files as Express.Multer.File[];
+  if (!files || files.length === 0)
+    throw new CustomError("No files uploaded", 400);
+
+  //TODO: move this size to config
+  const MAX_SIZE = 2 * 1024 * 1024;
+  for (const file of files) {
+    if (file.size > MAX_SIZE) {
+      throw new CustomError(
+        `File "${file.originalname}" exceeds 5MB size limit`,
+        400
+      );
+    }
+  }
+  const insertedPhotos = [];
+
+  for (const file of files) {
+    const filename = `${toiletId}/${uuidv4()}.jpg`;
+
+    const error = await uploadJPGs(file, filename);
+    if (error) throw new CustomError("Failed at uploading file", 500);
+
+    const photoRecord = await insertToiletPhotoRecord(
+      filename,
+      toiletIdNumber,
+      userId
+    );
+    insertedPhotos.push(photoRecord[0]);
   }
 
-  const response = result.map((t) => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    paid: t.paid,
-    location: {
-      latitude: t.location.y,
-      longitude: t.location.x,
-    },
-    distance: t.distance,
-    created_by: {
-      id: t.user.id,
-      username: t.user.profile?.username,
-      bio: t.user.profile?.bio,
-    },
-    features: t.toiletToFeatures.map((tf) => tf.feature),
-  }));
-  res.status(200).json(response);
+  res.status(201).json(insertedPhotos);
 };

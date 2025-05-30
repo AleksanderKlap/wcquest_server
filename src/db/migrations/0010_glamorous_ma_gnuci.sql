@@ -1,0 +1,1 @@
+ALTER TABLE "ToiletPhoto" ADD COLUMN "toilet_id" integer NOT NULL;
