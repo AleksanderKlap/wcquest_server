@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { Paid, toiletFeature, toiletPhoto } from "./toilet.entity.schema";
+import {
+  avgToiletRatings,
+  Paid,
+  toiletFeature,
+  toiletPhoto,
+  userRatingReturn,
+} from "./toilet.entity.schema";
+import { getUserToiletRatings } from "../../controllers/toilet/toilet-ratings.controller";
 extendZodWithOpenApi(z);
 
 export const allFeaturesResponse = z.object({
@@ -56,3 +63,9 @@ export type ToiletResponse = z.infer<typeof toiletResponse>;
 export type ToiletResponseWithDistance = ToiletResponse & {
   distance: number | null;
 };
+
+//RATE TOILET RESPONSE
+export const rateToiletResponse = z.object({
+  userRating: userRatingReturn,
+  avgRating: avgToiletRatings,
+});

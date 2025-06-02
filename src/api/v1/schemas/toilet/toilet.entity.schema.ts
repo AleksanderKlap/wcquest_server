@@ -47,3 +47,14 @@ export const avgToiletRatings = z.object({
   totalRatings: z.number().openapi({ example: 3 }),
 });
 export type AvgToiletRatings = z.infer<typeof avgToiletRatings>;
+
+//USER RATING RETURN
+export const userRatingReturn = z.object({
+  id: z.number(),
+  userId: z.number(),
+  createdAt: z.date(),
+  rating_cleanliness: z.number(),
+  rating_accessibility: z.number(),
+  rating_location: z.number(),
+  toiletId: z.number(),
+});

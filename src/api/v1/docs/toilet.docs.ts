@@ -5,12 +5,18 @@ import {
   boundingBoxRequest,
   createToiletRequest,
   inRadiusRequest,
+  ratingRequest,
 } from "../schemas/toilet/toilet.request.schema";
 import {
   allFeaturesResponse,
+  rateToiletResponse,
   toiletResponse,
 } from "../schemas/toilet/toilet.response.schema";
-import { toiletPhoto } from "../schemas/toilet/toilet.entity.schema";
+import {
+  avgToiletRatings,
+  toiletPhoto,
+  userRatingReturn,
+} from "../schemas/toilet/toilet.entity.schema";
 extendZodWithOpenApi(z);
 
 registry.register("CreateToiletRequest", createToiletRequest);
@@ -165,6 +171,114 @@ registry.registerPath({
     },
     500: {
       description: "Uploading to Supabase or DB failed",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/v1/toilet/{id}/ratings",
+  tags: ["Toilet"],
+  security: [{ bearerAuth: [] }],
+  description:
+    "Allows to rate the toilet on 3 different fields: cleanliness, accessibility, location. All 3 are neccesarry. For now one user can rate one toilet many times, will be changed in future.",
+  request: {
+    params: z.object({ id: z.string() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: ratingRequest,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Rating succesfull",
+      content: {
+        "application/json": {
+          schema: rateToiletResponse,
+        },
+      },
+    },
+    401: {
+      description: "Token Expired",
+    },
+    403: {
+      description: "Invalid token",
+    },
+    400: {
+      description: "Wrong body, read the error code",
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/ratings/my",
+  tags: ["Toilet"],
+  security: [{ bearerAuth: [] }],
+  description: "Gets all ratings of requesting user from freshest to oldest",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: rateToiletResponse,
+        },
+      },
+    },
+    401: {
+      description: "Token Expired",
+    },
+    403: {
+      description: "Invalid token",
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/{id}/ratings",
+  tags: ["Toilet"],
+  description: "Gets all ratings of id toilet from freshest to oldest",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: z.array(userRatingReturn),
+        },
+      },
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/{id}/ratings/avg",
+  tags: ["Toilet"],
+  description: "Get avg rating of toilet",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: avgToiletRatings,
+        },
+      },
+    },
+    500: {
+      description: "Something went wrong",
     },
   },
 });
