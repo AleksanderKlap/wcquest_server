@@ -247,6 +247,9 @@ registry.registerPath({
   method: "get",
   path: "/api/v1/toilet/{id}/ratings",
   tags: ["Toilet"],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
   description: "Gets all ratings of id toilet from freshest to oldest",
   responses: {
     200: {
@@ -267,6 +270,9 @@ registry.registerPath({
   method: "get",
   path: "/api/v1/toilet/{id}/ratings/avg",
   tags: ["Toilet"],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
   description: "Get avg rating of toilet",
   responses: {
     200: {
