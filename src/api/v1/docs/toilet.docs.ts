@@ -382,7 +382,7 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: "get",
+  method: "delete",
   path: "/api/v1/toilet/{toiletId}/comments/{commentId}",
   tags: ["Toilet"],
   security: [{ bearerAuth: [] }],
