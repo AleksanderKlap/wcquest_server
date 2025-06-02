@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { validate } from "../../../middleware/validator.middleware";
-import { updateProfileRequest } from "../schemas/profile.schema";
+import { updateProfileRequest } from "../schemas/user/profile.schema";
 import verifyJWT from "../../../middleware/auth.middleware";
-import { updateProfile } from "../controllers/profile.controller";
+import { updateProfile } from "../controllers/user/profile.controller";
 
 const router = Router();
 

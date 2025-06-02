@@ -1,10 +1,5 @@
 import { Router } from "express";
 import { validate } from "../../../middleware/validator.middleware";
-import {
-  boundingBoxQuerySchema,
-  createToiletRequest,
-  getInRadiusQuerySchema,
-} from "../schemas/toilet.schema";
 import verifyJWT from "../../../middleware/auth.middleware";
 import {
   createToilet,
@@ -12,9 +7,21 @@ import {
   getInRadius,
   toiletById,
   uploadToiletPhotos,
-} from "../controllers/toilet.controller";
-import { getAllFeatures } from "../controllers/feature.controller";
+} from "../controllers/toilet/toilet.controller";
+import { getAllFeatures } from "../controllers/toilet/feature.controller";
 import multer from "multer";
+import {
+  getRatingsOfToilet,
+  getToiletAvgRating,
+  getUserToiletRatings,
+  rateToilet,
+} from "../controllers/toilet/toilet-ratings.controller";
+import {
+  boundingBoxRequest,
+  createToiletRequest,
+  inRadiusRequest,
+  ratingRequest,
+} from "../schemas/toilet/toilet.request.schema";
 
 const router = Router();
 
@@ -26,25 +33,24 @@ router.post(
   upload.array("toilet-photos", 10),
   uploadToiletPhotos
 );
-// router.post(
-//   "/toilet/:id/photo",
-//   verifyJWT,
-//   upload.single("toilet-photo"),
-//   uploadJPG
-// );
+router.post(
+  "/toilet/:id/ratings",
+  validate(ratingRequest),
+  verifyJWT,
+  rateToilet
+);
+router.get("/toilet/ratings/my", verifyJWT, getUserToiletRatings);
 
 //not protected
 router.get("/features", getAllFeatures);
+router.get("/toilet/:id", toiletById);
+router.get("/toilet/:id/ratings", getRatingsOfToilet);
+router.get("/toilet/:id/ratings/avg", getToiletAvgRating);
 router.get(
   "/toilet/bbox",
-  validate(boundingBoxQuerySchema, "query"),
+  validate(boundingBoxRequest, "query"),
   getInBoundingBox
 );
-router.get(
-  "/toilet/inradius",
-  validate(getInRadiusQuerySchema, "query"),
-  getInRadius
-);
-router.get("/toilet/:id", toiletById);
+router.get("/toilet/inradius", validate(inRadiusRequest, "query"), getInRadius);
 
 export { router as toiletRouter };

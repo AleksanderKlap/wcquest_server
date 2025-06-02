@@ -1,14 +1,22 @@
 import z, { any } from "zod";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { registry } from "./registry.docs";
+import {
+  boundingBoxRequest,
+  createToiletRequest,
+  inRadiusRequest,
+  ratingRequest,
+} from "../schemas/toilet/toilet.request.schema";
 import {
   allFeaturesResponse,
-  boundingBoxQuerySchema,
-  createToiletRequest,
-  getInRadiusQuerySchema,
-  photoSchema,
+  rateToiletResponse,
   toiletResponse,
-} from "../schemas/toilet.schema";
-import { registry } from "./registry.docs";
+} from "../schemas/toilet/toilet.response.schema";
+import {
+  avgToiletRatings,
+  toiletPhoto,
+  userRatingReturn,
+} from "../schemas/toilet/toilet.entity.schema";
 extendZodWithOpenApi(z);
 
 registry.register("CreateToiletRequest", createToiletRequest);
@@ -80,7 +88,7 @@ registry.registerPath({
   description:
     "Get toilets within a radius from a point (user location). 'lng' and 'lat' are user location longitude and latitude, radius is measured in meters. Page and limit are optional and are defaulted to 1 and 20 if not specidied. The result is ordered by distance from user, closest first. Example query: /api/v1/toilet/inradius?lat=52.3676&lng=4.9041&radius=2000",
   request: {
-    query: getInRadiusQuerySchema,
+    query: inRadiusRequest,
   },
   responses: {
     200: {
@@ -104,7 +112,7 @@ registry.registerPath({
   description:
     "Get toilets within bounding box, that is a rectangle. minlng and minlat are x,y of bottom left corner point of rectangle, and maxlng and maxlat are x,y of top right corner point of rectangle. Additional query parameters are ulng and ulat, which are user coordinates, they are optional, if passed, result is ordered by distance to the user (user do not need to be in the bounding box), if not passed result is unordered. Distance is measured in meters if present. Page and limit are optional and are defaulted to 1 and 20 if not specidied. Example query: /api/v1/toilet/bbox?minlng=4.7285&minlat=52.2782&maxlng=5.0792&maxlat=52.4312&ulng=4.90385&ulat=52.3547&page=1&limit=20",
   request: {
-    query: boundingBoxQuerySchema,
+    query: boundingBoxRequest,
   },
   responses: {
     200: {
@@ -154,7 +162,7 @@ registry.registerPath({
       description: "Photos uploaded and saved successfully",
       content: {
         "application/json": {
-          schema: z.array(photoSchema),
+          schema: z.array(toiletPhoto),
         },
       },
     },
@@ -163,6 +171,114 @@ registry.registerPath({
     },
     500: {
       description: "Uploading to Supabase or DB failed",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/v1/toilet/{id}/ratings",
+  tags: ["Toilet"],
+  security: [{ bearerAuth: [] }],
+  description:
+    "Allows to rate the toilet on 3 different fields: cleanliness, accessibility, location. All 3 are neccesarry. For now one user can rate one toilet many times, will be changed in future.",
+  request: {
+    params: z.object({ id: z.string() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: ratingRequest,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Rating succesfull",
+      content: {
+        "application/json": {
+          schema: rateToiletResponse,
+        },
+      },
+    },
+    401: {
+      description: "Token Expired",
+    },
+    403: {
+      description: "Invalid token",
+    },
+    400: {
+      description: "Wrong body, read the error code",
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/ratings/my",
+  tags: ["Toilet"],
+  security: [{ bearerAuth: [] }],
+  description: "Gets all ratings of requesting user from freshest to oldest",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: z.array(userRatingReturn),
+        },
+      },
+    },
+    401: {
+      description: "Token Expired",
+    },
+    403: {
+      description: "Invalid token",
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/{id}/ratings",
+  tags: ["Toilet"],
+  description: "Gets all ratings of id toilet from freshest to oldest",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: z.array(userRatingReturn),
+        },
+      },
+    },
+    500: {
+      description: "Something went wrong",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/toilet/{id}/ratings/avg",
+  tags: ["Toilet"],
+  description: "Get avg rating of toilet",
+  responses: {
+    200: {
+      description: "Getting succesfull",
+      content: {
+        "application/json": {
+          schema: avgToiletRatings,
+        },
+      },
+    },
+    500: {
+      description: "Something went wrong",
     },
   },
 });

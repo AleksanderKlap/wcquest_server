@@ -1,11 +1,13 @@
 import {
   loginRequest,
-  loginResponse,
   refreshTokenRequest,
-  refreshTokenResponse,
   registerRequest,
+} from "../schemas/auth/auth.request.schema";
+import {
+  loginResponse,
+  refreshTokenResponse,
   registerResponse,
-} from "../schemas/auth.schema";
+} from "../schemas/auth/auth.response.schema";
 import { registry } from "./registry.docs";
 
 registry.register("RegisterRequest", registerRequest);

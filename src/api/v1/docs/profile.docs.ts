@@ -1,7 +1,7 @@
 import {
   updateProfileRequest,
   updateProfileResponse,
-} from "../schemas/profile.schema";
+} from "../schemas/user/profile.schema";
 import { registry } from "./registry.docs";
 import { bearerAuth } from "./components.docs";
 

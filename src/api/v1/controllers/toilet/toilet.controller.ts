@@ -1,24 +1,25 @@
-import db from "../../../config/database";
+import db from "@config/database";
 import { Request, Response } from "express";
-import { toilet, toiletToFeatures } from "../../../db/schemas/schema";
-import {
-  CreateToiletRequest,
-  ToiletResponse,
-  ToiletResponseWithDistance,
-  toiletWithQuery,
-} from "../schemas/toilet.schema";
+import { toilet, toiletToFeatures } from "@/db/schemas/schema";
 import { eq, sql } from "drizzle-orm";
-import CustomError from "../../../errors/custom-error.error";
+import CustomError from "@error/custom-error.error";
+import { v4 as uuidv4 } from "uuid";
+import { uploadJPGs } from "@/api/v1/repos/bucket.repo";
 import {
   arrayToiletResponseMapper,
+  singleToiletResponseMapper,
+} from "../../services/toilet.mapper";
+import { CreateToiletRequest } from "../../schemas/toilet/toilet.request.schema";
+import {
+  ToiletResponse,
+  ToiletResponseWithDistance,
+} from "../../schemas/toilet/toilet.response.schema";
+import {
   getToiletById,
   getToiletsInBBox,
   getToiletsInRadius,
   insertToiletPhotoRecord,
-  singleToiletResponseMapper,
-} from "../services/toiletdb.util";
-import { v4 as uuidv4 } from "uuid";
-import { uploadJPGs } from "../services/bucket.util";
+} from "../../repos/toilet.repo";
 
 export const toiletById = async (req: Request, res: Response) => {
   const toiletId = parseInt(req.params.id);
@@ -63,7 +64,17 @@ export const createToilet = async (req: Request, res: Response) => {
 
     const inserted = await tx.query.toilet.findFirst({
       where: eq(toilet.id, newToilet.id),
-      with: toiletWithQuery,
+      with: {
+        toiletToFeatures: {
+          with: { feature: true },
+        },
+        user: {
+          with: { profile: true },
+        },
+        photos: {
+          with: { user: { with: { profile: true } } },
+        },
+      },
     });
     return inserted;
   });

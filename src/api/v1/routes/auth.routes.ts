@@ -1,15 +1,15 @@
 import { Router } from "express";
 import { validate } from "../../../middleware/validator.middleware";
 import {
-  loginRequest,
-  refreshTokenRequest,
-  registerRequest,
-} from "../schemas/auth.schema";
-import {
   login,
   refreshTokenEndpoint,
   register,
-} from "../controllers/auth.controller";
+} from "../controllers//auth/auth.controller";
+import {
+  loginRequest,
+  refreshTokenRequest,
+  registerRequest,
+} from "../schemas/auth/auth.request.schema";
 
 const router = Router();
 

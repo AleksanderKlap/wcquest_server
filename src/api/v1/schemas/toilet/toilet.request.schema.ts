@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { getToiletById } from "../services/toiletdb.util";
 extendZodWithOpenApi(z);
 
 export const Paid = {
@@ -9,6 +8,7 @@ export const Paid = {
 } as const;
 export type Paid = (typeof Paid)[keyof typeof Paid];
 
+//CREATE TOILET
 export const createToiletRequest = z.object({
   name: z
     .string()
@@ -44,21 +44,8 @@ export const createToiletRequest = z.object({
 });
 export type CreateToiletRequest = z.infer<typeof createToiletRequest>;
 
-const featureSchema = z.object({
-  id: z.number().openapi({ example: 1 }),
-  name: z.string().openapi({ example: "Accessible Entrance" }),
-  description: z.string().nullable().openapi({
-    example: "Ramp available",
-    description: "Description of the feature",
-  }),
-});
-export type FeatureSchema = z.infer<typeof featureSchema>;
-
-export const allFeaturesResponse = z.object({
-  features: z.array(featureSchema),
-});
-
-export const boundingBoxQuerySchema = z.object({
+//GET TOILET IN BOUNDING BOX QUERY REQUEST
+export const boundingBoxRequest = z.object({
   minlng: z.coerce.number().min(-180).max(180).openapi({
     example: 4.8951,
     description: "Minimum longitude of bounding box",
@@ -101,9 +88,10 @@ export const boundingBoxQuerySchema = z.object({
     .default(20)
     .openapi({ example: 20, description: "Number of items per page" }),
 });
-export type BoundingBoxQuerySchema = z.infer<typeof boundingBoxQuerySchema>;
+export type BoundingBoxRequest = z.infer<typeof boundingBoxRequest>;
 
-export const getInRadiusQuerySchema = z.object({
+//GET TOILETS IN RADIUS REQUEST QUERY
+export const inRadiusRequest = z.object({
   lng: z.coerce
     .number()
     .min(-180)
@@ -134,85 +122,12 @@ export const getInRadiusQuerySchema = z.object({
       description: "Limit of toilets per page (default is 20)",
     }),
 });
-export type getInRadiusQuerySchema = z.infer<typeof getInRadiusQuerySchema>;
+export type InRadiusRequest = z.infer<typeof inRadiusRequest>;
 
-export const photoSchema = z.object({
-  id: z.number().openapi({ example: 123 }),
-  url: z.string().openapi({
-    example: "toilet/42/photo-uuid.jpg",
-    description: "Path to photo in Supabase",
-  }),
-  addedBy: z.object({
-    userId: z.number().openapi({ example: 12 }),
-    username: z.string().openapi({ example: "Olek" }),
-  }),
-  createdAt: z.date().openapi({
-    example: new Date().toISOString(),
-    description: "Date when the photo was added",
-  }),
+//RATING REQUEST BODY
+export const ratingRequest = z.object({
+  rating_cleanliness: z.number().openapi({ example: 1 }),
+  rating_accessibility: z.number().openapi({ example: 3 }),
+  rating_location: z.number().openapi({ example: 5 }),
 });
-
-export const toiletResponse = z.object({
-  id: z.number().openapi({ example: 42 }),
-  name: z.string().openapi({ example: "McDonald Toilet" }),
-  description: z.string().openapi({ example: "On the second floor" }),
-  paid: z.nativeEnum(Paid).openapi({ example: Paid.FREE }),
-  location: z.object({
-    latitude: z.number().openapi({ example: -12.04221 }),
-    longitude: z.number().openapi({ example: 121.04221 }),
-  }),
-  created_by: z.object({
-    id: z.number().openapi({ example: 123 }),
-    username: z.string().openapi({ example: "Cool user" }),
-    bio: z.string().openapi({ example: "I love to pee in McDonald" }),
-  }),
-  features: z.array(featureSchema).openapi({
-    example: [
-      { id: 1, name: "Feature 1", description: null },
-      { id: 2, name: "Feature 2", description: null },
-      { id: 3, name: "Feature 3", description: null },
-    ],
-  }),
-  photos: z.array(photoSchema).openapi({
-    example: [
-      {
-        id: 1,
-        url: "/uploads/photo1.jpg",
-        addedBy: {
-          userId: 5,
-          username: "toiletFan99",
-        },
-        createdAt: new Date(),
-      },
-      {
-        id: 2,
-        url: "/uploads/photo2.jpg",
-        addedBy: {
-          userId: 7,
-          username: "bathroomExplorer",
-        },
-        createdAt: new Date(),
-      },
-    ],
-  }),
-});
-export type ToiletResponse = z.infer<typeof toiletResponse>;
-
-export type ToiletResponseWithDistance = ToiletResponse & {
-  distance: number | null;
-};
-
-//TODO: move to util for general use
-export const toiletWithQuery = {
-  toiletToFeatures: {
-    with: { feature: true },
-  },
-  user: {
-    with: { profile: true },
-  },
-  photos: {
-    with: { user: { with: { profile: true } } },
-  },
-} as const;
-
-export type ToiletWithRelations = Awaited<ReturnType<typeof getToiletById>>;
+export type RatingRequest = z.infer<typeof ratingRequest>;
