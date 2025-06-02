@@ -227,7 +227,7 @@ registry.registerPath({
       description: "Getting succesfull",
       content: {
         "application/json": {
-          schema: rateToiletResponse,
+          schema: z.array(userRatingReturn),
         },
       },
     },
