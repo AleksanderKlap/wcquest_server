@@ -151,6 +151,23 @@ export const toiletToFeatures = pgTable(
   (t) => [primaryKey({ columns: [t.toiletId, t.featureId] })]
 );
 
+export const toiletComment = pgTable("ToiletComment", {
+  id: serial("id").primaryKey(),
+  userId: integer("created_by")
+    .notNull()
+    .references(() => user.id),
+  toiletId: integer("toilet_id")
+    .notNull()
+    .references(() => toilet.id),
+  content: text().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
 //relations
 
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -159,6 +176,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   refreshToken: many(refreshToken),
   toiletPhoto: many(toiletPhoto),
   ratings: many(toiletRating),
+  comments: many(toiletComment),
 }));
 
 export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
@@ -174,6 +192,7 @@ export const toiletRelations = relations(toilet, ({ one, many }) => ({
   toiletToFeatures: many(toiletToFeatures),
   photos: many(toiletPhoto),
   ratings: many(toiletRating),
+  comments: many(toiletComment),
 }));
 
 export const toiletRatingRelations = relations(toiletRating, ({ one }) => ({
@@ -213,8 +232,15 @@ export const toiletToFeaturesRelations = relations(
   })
 );
 
-// views
+export const toiletCommentRelations = relations(toiletComment, ({ one }) => ({
+  user: one(user, { fields: [toiletComment.userId], references: [user.id] }),
+  toilet: one(toilet, {
+    fields: [toiletComment.toiletId],
+    references: [toilet.id],
+  }),
+}));
 
+// views
 export const avgRatingView = pgView("avg_rating_view").as((qb) =>
   qb
     .select({

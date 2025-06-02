@@ -58,3 +58,20 @@ export const userRatingReturn = z.object({
   rating_location: z.number(),
   toiletId: z.number(),
 });
+
+//COMMENT
+export const toiletComment = z.object({
+  id: z.number().openapi({ example: 223 }),
+  toiletId: z.number().openapi({ example: 21 }),
+  content: z
+    .string()
+    .min(5)
+    .max(500)
+    .openapi({ example: "This is example comment" }),
+  created_by: z.object({
+    userId: z.number().openapi({ example: 32 }),
+    username: z.string().openapi({ example: "someusername" }),
+  }),
+  created_at: z.date(),
+});
+export type ToiletComment = z.infer<typeof toiletComment>;

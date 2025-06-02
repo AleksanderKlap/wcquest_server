@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import CustomError from "@error/custom-error.error";
-import { eq, sql, asc, desc } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import db from "@config/database";
 import { avgRatingView, toilet, toiletRating } from "@db/schemas/schema";
 import { insertToiletRatingRecord } from "../../repos/rating.repo";
