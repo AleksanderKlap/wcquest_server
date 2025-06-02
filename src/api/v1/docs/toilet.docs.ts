@@ -1,14 +1,16 @@
 import z, { any } from "zod";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { registry } from "./registry.docs";
+import {
+  boundingBoxRequest,
+  createToiletRequest,
+  inRadiusRequest,
+} from "../schemas/toilet/toilet.request.schema";
 import {
   allFeaturesResponse,
-  boundingBoxQuerySchema,
-  createToiletRequest,
-  getInRadiusQuerySchema,
-  photoSchema,
   toiletResponse,
-} from "../schemas/toilet.schema";
-import { registry } from "./registry.docs";
+} from "../schemas/toilet/toilet.response.schema";
+import { toiletPhoto } from "../schemas/toilet/toilet.entity.schema";
 extendZodWithOpenApi(z);
 
 registry.register("CreateToiletRequest", createToiletRequest);
@@ -80,7 +82,7 @@ registry.registerPath({
   description:
     "Get toilets within a radius from a point (user location). 'lng' and 'lat' are user location longitude and latitude, radius is measured in meters. Page and limit are optional and are defaulted to 1 and 20 if not specidied. The result is ordered by distance from user, closest first. Example query: /api/v1/toilet/inradius?lat=52.3676&lng=4.9041&radius=2000",
   request: {
-    query: getInRadiusQuerySchema,
+    query: inRadiusRequest,
   },
   responses: {
     200: {
@@ -104,7 +106,7 @@ registry.registerPath({
   description:
     "Get toilets within bounding box, that is a rectangle. minlng and minlat are x,y of bottom left corner point of rectangle, and maxlng and maxlat are x,y of top right corner point of rectangle. Additional query parameters are ulng and ulat, which are user coordinates, they are optional, if passed, result is ordered by distance to the user (user do not need to be in the bounding box), if not passed result is unordered. Distance is measured in meters if present. Page and limit are optional and are defaulted to 1 and 20 if not specidied. Example query: /api/v1/toilet/bbox?minlng=4.7285&minlat=52.2782&maxlng=5.0792&maxlat=52.4312&ulng=4.90385&ulat=52.3547&page=1&limit=20",
   request: {
-    query: boundingBoxQuerySchema,
+    query: boundingBoxRequest,
   },
   responses: {
     200: {
@@ -154,7 +156,7 @@ registry.registerPath({
       description: "Photos uploaded and saved successfully",
       content: {
         "application/json": {
-          schema: z.array(photoSchema),
+          schema: z.array(toiletPhoto),
         },
       },
     },

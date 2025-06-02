@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import CustomError from "../../../errors/custom-error.error";
+import CustomError from "@error/custom-error.error";
 import { v4 as uuidv4 } from "uuid";
-import supabase from "../../../config/bucket";
-import db from "../../../config/database";
-import { toiletPhoto } from "../../../db/schemas/schema";
+import supabase from "@config/bucket";
+import db from "@config/database";
+import { toiletPhoto } from "@db/schemas/schema";
 
 // export const uploadJPG = async (req: Request, res: Response) => {
 //   const toiletId = req.params.id;

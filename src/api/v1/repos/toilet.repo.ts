@@ -1,17 +1,22 @@
+import db from "@/config/database";
+import { toilet, toiletPhoto, toiletRating } from "@/db/schemas/schema";
 import { eq, sql } from "drizzle-orm";
-import db from "../../../config/database";
-import { toilet, toiletPhoto, toiletRating } from "../../../db/schemas/schema";
-import {
-  ToiletResponse,
-  ToiletResponseWithDistance,
-  toiletWithQuery,
-  ToiletWithRelations,
-} from "../schemas/toilet.schema";
+import { ToiletWithRelationsAndDistance } from "@v1/types/types";
 
 export const getToiletById = async (id: number) => {
   const found = await db.query.toilet.findFirst({
     where: eq(toilet.id, id),
-    with: toiletWithQuery,
+    with: {
+      toiletToFeatures: {
+        with: { feature: true },
+      },
+      user: {
+        with: { profile: true },
+      },
+      photos: {
+        with: { user: { with: { profile: true } } },
+      },
+    },
   });
   return found;
 };
@@ -22,7 +27,7 @@ export const getToiletsInRadius = async (
   radius: number,
   limit?: number,
   page?: number
-): Promise<(ToiletWithRelations & { distance: number })[]> => {
+): Promise<ToiletWithRelationsAndDistance[]> => {
   const point = sql`ST_SetSRID(ST_MakePoint(${x}, ${y}), 4326)`;
   if (page === undefined || limit === undefined) {
     limit = 20;
@@ -32,7 +37,17 @@ export const getToiletsInRadius = async (
 
   const result = await db.query.toilet.findMany({
     where: sql`ST_DWithin(${toilet.location}::geography, ${point}, ${radius})`,
-    with: toiletWithQuery,
+    with: {
+      toiletToFeatures: {
+        with: { feature: true },
+      },
+      user: {
+        with: { profile: true },
+      },
+      photos: {
+        with: { user: { with: { profile: true } } },
+      },
+    },
     orderBy: (toilet, { sql }) =>
       sql`${toilet.location}::geography<-> ${point}`,
     extras: {
@@ -47,7 +62,7 @@ export const getToiletsInRadius = async (
   const typedResult = result.map((r) => ({
     ...r,
     distance: Number(r.distance),
-  })) as (ToiletWithRelations & { distance: number })[];
+  })) as ToiletWithRelationsAndDistance[];
   return typedResult;
 };
 
@@ -60,7 +75,7 @@ export const getToiletsInBBox = async (
   ulat?: number,
   limit?: number,
   page?: number
-): Promise<(ToiletWithRelations & { distance: number | null })[]> => {
+): Promise<ToiletWithRelationsAndDistance[]> => {
   if (page === undefined || limit === undefined) {
     limit = 20;
     page = 1;
@@ -80,7 +95,17 @@ export const getToiletsInBBox = async (
   if (userPoint) {
     result = await db.query.toilet.findMany({
       where: sql`ST_Within(${toilet.location}, ${bbox})`,
-      with: toiletWithQuery,
+      with: {
+        toiletToFeatures: {
+          with: { feature: true },
+        },
+        user: {
+          with: { profile: true },
+        },
+        photos: {
+          with: { user: { with: { profile: true } } },
+        },
+      },
       orderBy: (toilet, { sql }) =>
         sql`${toilet.location}::geography<-> ${userPoint}`,
       extras: {
@@ -95,7 +120,17 @@ export const getToiletsInBBox = async (
   } else {
     result = await db.query.toilet.findMany({
       where: sql`ST_Within(${toilet.location}, ${bbox})`,
-      with: toiletWithQuery,
+      with: {
+        toiletToFeatures: {
+          with: { feature: true },
+        },
+        user: {
+          with: { profile: true },
+        },
+        photos: {
+          with: { user: { with: { profile: true } } },
+        },
+      },
       extras: {
         distance:
           sql`ST_Distance(${toilet.location}::geography, ${userPoint})`.as(
@@ -110,72 +145,8 @@ export const getToiletsInBBox = async (
   const typedResult = result.map((r) => ({
     ...r,
     distance: r.distance !== undefined ? Number(r.distance) : null,
-  })) as (ToiletWithRelations & { distance: number | null })[];
+  })) as ToiletWithRelationsAndDistance[];
   return typedResult;
-};
-
-export const singleToiletResponseMapper = (
-  result: ToiletWithRelations
-): ToiletResponse | null => {
-  if (!result) return null;
-  const response: ToiletResponse = {
-    id: result.id,
-    name: result.name,
-    description: result.description,
-    paid: result.paid,
-    location: {
-      latitude: result.location.y,
-      longitude: result.location.x,
-    },
-    created_by: {
-      id: result.user.id,
-      username: result.user.profile!.username,
-      bio: result.user.profile!.bio,
-    },
-    features: result.toiletToFeatures.map((tf) => tf.feature),
-    photos: result.photos.map((tp) => ({
-      id: tp.id,
-      createdAt: tp.createdAt,
-      url: tp.url,
-      addedBy: {
-        userId: tp.userId,
-        username: tp.user.profile!.username,
-      },
-    })),
-  };
-  return response;
-};
-
-export const arrayToiletResponseMapper = (
-  result: (ToiletWithRelations & { distance: number | null })[]
-): ToiletResponseWithDistance[] => {
-  const response = result.map((t) => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    paid: t.paid,
-    location: {
-      latitude: t.location.y,
-      longitude: t.location.x,
-    },
-    distance: t.distance ? t.distance : null,
-    created_by: {
-      id: t.user.id,
-      username: t.user.profile!.username,
-      bio: t.user.profile!.bio,
-    },
-    features: t.toiletToFeatures.map((tf) => tf.feature),
-    photos: t.photos.map((tp) => ({
-      id: tp.id,
-      createdAt: tp.createdAt,
-      url: tp.url,
-      addedBy: {
-        userId: tp.userId,
-        username: tp.user.profile!.username,
-      },
-    })),
-  }));
-  return response;
 };
 
 export const insertToiletPhotoRecord = async (
@@ -192,24 +163,4 @@ export const insertToiletPhotoRecord = async (
     })
     .returning();
   return returning;
-};
-
-export const insertToiletRatingRecord = async (
-  toiletId: number,
-  userId: number,
-  rating_cleanliness: number,
-  rating_accessibility: number,
-  rating_location: number
-) => {
-  const returning = await db
-    .insert(toiletRating)
-    .values({
-      userId,
-      toiletId,
-      rating_cleanliness,
-      rating_accessibility,
-      rating_location,
-    })
-    .returning();
-  return returning ? returning : null;
 };

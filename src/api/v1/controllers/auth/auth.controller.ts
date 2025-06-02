@@ -1,24 +1,24 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import db from "../../../config/database";
 import { eq } from "drizzle-orm";
-import {
-  profile,
-  user,
-  refreshToken as refreshTokenTable,
-} from "../../../db/schemas/schema";
-import CustomError from "../../../errors/custom-error.error";
 import {
   generateRefreshToken,
   generateToken,
   UserPayload,
-} from "../../../services/jwt.service";
+} from "@services/jwt.service";
+import jwt from "jsonwebtoken";
 import {
   LoginResponse,
   RefreshTokenResponse,
   RegisterResponse,
-} from "../schemas/auth.schema";
-import jwt from "jsonwebtoken";
+} from "../../schemas/auth/auth.response.schema";
+import db from "@/config/database";
+import {
+  profile,
+  user,
+  refreshToken as refreshTokenTable,
+} from "@/db/schemas/schema";
+import CustomError from "@/errors/custom-error.error";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;

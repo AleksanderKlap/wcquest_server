@@ -1,13 +1,9 @@
 import { Request, Response } from "express";
-import CustomError from "../../../../errors/custom-error.error";
+import CustomError from "@error/custom-error.error";
 import { eq, sql, asc, desc } from "drizzle-orm";
-import db from "../../../../config/database";
-import {
-  avgRatingView,
-  toilet,
-  toiletRating,
-} from "../../../../db/schemas/schema";
-import { insertToiletRatingRecord } from "../../services/toiletdb.util";
+import db from "@config/database";
+import { avgRatingView, toilet, toiletRating } from "@db/schemas/schema";
+import { insertToiletRatingRecord } from "../../repos/rating.repo";
 
 export const rateToilet = async (req: Request, res: Response) => {
   //get toilet id and user id from params

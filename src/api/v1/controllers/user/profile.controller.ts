@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import db from "../../../config/database";
-import { profile } from "../../../db/schemas/schema";
+import db from "@config/database";
+import { profile } from "@db/schemas/schema";
 import { eq } from "drizzle-orm";
-import { UpdateProfileResponse } from "../schemas/profile.schema";
+import { UpdateProfileResponse } from "@/api/v1/schemas/user/profile.schema";
 
 export const updateProfile = async (req: Request, res: Response) => {
   const [updateUser] = await db
