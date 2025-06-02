@@ -34,6 +34,7 @@
     "express-validator": "^7.2.1",
     "express-winston": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
     "multer": "^2.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -61,13 +62,13 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
-"_moduleAliases": {
-  "@": "dist",
-  "@config": "dist/config",
-  "@db": "dist/db",
-  "@middleware": "dist/middleware",
-  "@services": "dist/services",
-  "@v1": "dist/api/v1",
-  "@error": "dist/errors"
-}
+  "_moduleAliases": {
+    "@": "dist",
+    "@config": "dist/config",
+    "@db": "dist/db",
+    "@middleware": "dist/middleware",
+    "@services": "dist/services",
+    "@v1": "dist/api/v1",
+    "@error": "dist/errors"
+  }
 }
