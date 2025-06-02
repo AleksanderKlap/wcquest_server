@@ -131,3 +131,11 @@ export const ratingRequest = z.object({
   rating_location: z.number().openapi({ example: 5 }),
 });
 export type RatingRequest = z.infer<typeof ratingRequest>;
+
+//ADD COMMENT REQUEST BODY
+export const commentRequest = z.object({
+  content: z.string().min(5).max(500).openapi({
+    example:
+      "This is example comment and it needs to have from 5 to 500 characters",
+  }),
+});
