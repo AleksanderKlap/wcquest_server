@@ -1,7 +1,10 @@
 import db from "@/config/database";
 import { toilet, toiletPhoto, toiletRating } from "@/db/schemas/schema";
 import { eq, sql } from "drizzle-orm";
-import { ToiletWithRelationsAndDistance } from "@v1/types/types";
+import {
+  ToiletWithRelations,
+  ToiletWithRelationsAndDistance,
+} from "@v1/types/types";
 
 export const getToiletById = async (id: number) => {
   const found = await db.query.toilet.findFirst({
@@ -92,6 +95,7 @@ export const getToiletsInBBox = async (
   const bbox = sql`ST_MakeEnvelope(${minlng}, ${minlat}, ${maxlng}, ${maxlat}, 4326)`;
 
   let result;
+
   if (userPoint) {
     result = await db.query.toilet.findMany({
       where: sql`ST_Within(${toilet.location}, ${bbox})`,
@@ -132,21 +136,16 @@ export const getToiletsInBBox = async (
         },
       },
       extras: {
-        distance:
-          sql`ST_Distance(${toilet.location}::geography, ${userPoint})`.as(
-            "distance"
-          ),
+        distance: sql`NULL`.as("distance"),
       },
       limit,
       offset,
     });
   }
-
-  const typedResult = result.map((r) => ({
-    ...r,
-    distance: r.distance !== undefined ? Number(r.distance) : null,
-  })) as ToiletWithRelationsAndDistance[];
-  return typedResult;
+  // const typedResult = result.map((r) => ({
+  //   ...r,
+  // })) as ToiletWithRelationsAndDistance[];
+  return result as ToiletWithRelationsAndDistance[];
 };
 
 export const insertToiletPhotoRecord = async (
