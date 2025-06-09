@@ -65,15 +65,15 @@ router.delete(
 );
 
 //not protected
-router.get("/features", getAllFeatures);
-router.get("/toilet/:id", toiletById);
-router.get("/toilet/:id/ratings", getRatingsOfToilet);
-router.get("/toilet/:id/ratings/avg", getToiletAvgRating);
 router.get(
   "/toilet/bbox",
   validate(boundingBoxRequest, "query"),
   getInBoundingBox
 );
+router.get("/features", getAllFeatures);
+router.get("/toilet/:id", toiletById);
+router.get("/toilet/:id/ratings", getRatingsOfToilet);
+router.get("/toilet/:id/ratings/avg", getToiletAvgRating);
 router.get("/toilet/inradius", validate(inRadiusRequest, "query"), getInRadius);
 
 router.get("/toilet/:id/comments", getToiletComments);

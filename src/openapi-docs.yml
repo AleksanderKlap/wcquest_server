@@ -1,0 +1,1567 @@
+openapi: 3.0.0
+info:
+  title: WCQuest API
+  version: 1.0.0
+  description: WCQuest json api
+servers:
+  - url: https://wcquestserver-production.up.railway.app
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Profile
+    description: User profile endpoints
+  - name: Toilet
+    description: Toilet endpoints
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: example@gmail.com
+        password:
+          type: string
+          minLength: 6
+          pattern: "[A-Z]"
+          example: StrongPassword123
+      required:
+        - email
+        - password
+      description: Schema for register request
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message about the server response
+          example: Registration Succesfull
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+              example: example@gmail.com
+          required:
+            - email
+      required:
+        - message
+        - user
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: example@gmail.com
+        password:
+          type: string
+          minLength: 6
+          example: StrongPass123
+      required:
+        - email
+        - password
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login succesfull
+        token:
+          type: string
+          example: your_jwt_token_string
+        refreshToken:
+          type: string
+          example: your_jwt_refresh_token_string
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 123
+            email:
+              type: string
+              example: example@gmail.com
+          required:
+            - id
+            - email
+      required:
+        - message
+        - token
+        - refreshToken
+        - user
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          example: your_jwt_token_string
+      required:
+        - refreshToken
+    RefreshTokenResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Refreshing token sucessfull
+        token:
+          type: string
+          example: your new jwt access token
+        refreshToken:
+          type: string
+          example: your new jwt refresh token
+      required:
+        - message
+        - token
+        - refreshToken
+    UpdateProfileRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 2
+          description: Min 2 characters
+          example: Cool_Username
+        bio:
+          type: string
+          minLength: 2
+          maxLength: 500
+          description: Between 2 and 500 characters
+          example: This is my bio
+    UpdateProfileResponse:
+      type: object
+      properties:
+        username:
+          type: string
+          example: Cool_Username
+        bio:
+          type: string
+          example: This is my bio
+      required:
+        - username
+        - bio
+    CreateToiletRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          description: Name of the toilet
+          example: McDonald Toilet
+        description:
+          type: string
+          minLength: 2
+          description: Location or details about the toilet
+          example: On the second floor
+        paid:
+          type: string
+          enum:
+            - FREE
+            - PAID
+          description: Whether the toilet is FREE or PAID
+          example: FREE
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: Latitude of the toilet location
+          example: -12.04221
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: Longitude of the toilet location
+          example: 121.04221
+        features_ids:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            exclusiveMinimum: true
+          description: Array of feature IDs to associate with the toilet
+          example: &a1
+            - 1
+            - 3
+            - 2
+      required:
+        - name
+        - description
+        - paid
+        - latitude
+        - longitude
+  parameters: {}
+paths:
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Auth
+      description:
+        Register new User with email and password. With account creation
+        the default user profile is created.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: example@gmail.com
+                password:
+                  type: string
+                  minLength: 6
+                  pattern: "[A-Z]"
+                  example: StrongPassword123
+              required:
+                - email
+                - password
+              description: Schema for register request
+      responses:
+        "201":
+          description: Registration Succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message about the server response
+                    example: Registration Succesfull
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        format: email
+                        example: example@gmail.com
+                    required:
+                      - email
+                required:
+                  - message
+                  - user
+        "400":
+          description: Validation of request body failed. Read error cause for details
+        "409":
+          description: This email is already registered
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      description: Start session with registered user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: example@gmail.com
+                password:
+                  type: string
+                  minLength: 6
+                  example: StrongPass123
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Login succesfull - session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login succesfull
+                  token:
+                    type: string
+                    example: your_jwt_token_string
+                  refreshToken:
+                    type: string
+                    example: your_jwt_refresh_token_string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 123
+                      email:
+                        type: string
+                        example: example@gmail.com
+                    required:
+                      - id
+                      - email
+                required:
+                  - message
+                  - token
+                  - refreshToken
+                  - user
+        "400":
+          description: Validation of request body failed. Read error cause for details
+        "401":
+          description: Invalid email or password
+  /api/v1/auth/refreshtoken:
+    post:
+      tags:
+        - Auth
+      description:
+        Refresh token, accepts jwt-refresh-token and responds with new
+        refresh token and new access jwt token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: your_jwt_token_string
+              required:
+                - refreshToken
+      responses:
+        "200":
+          description: Refresh token succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Refreshing token sucessfull
+                  token:
+                    type: string
+                    example: your new jwt access token
+                  refreshToken:
+                    type: string
+                    example: your new jwt refresh token
+                required:
+                  - message
+                  - token
+                  - refreshToken
+        "400":
+          description: Validation of request body failed. Read error cause for details
+        "401":
+          description: Refresh token is expired - than u need to login for new one
+        "403":
+          description:
+            Refresh token is invalid - or there is mismatch with refresh token
+            on DB and aquired from client
+  /api/v1/profile:
+    patch:
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      description:
+        Update user profile {username, bio} with new values, at least one
+        is requred
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 2
+                  description: Min 2 characters
+                  example: Cool_Username
+                bio:
+                  type: string
+                  minLength: 2
+                  maxLength: 500
+                  description: Between 2 and 500 characters
+                  example: This is my bio
+      responses:
+        "200":
+          description: Profile Update Succesfull, return updated profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: Cool_Username
+                  bio:
+                    type: string
+                    example: This is my bio
+                required:
+                  - username
+                  - bio
+        "400":
+          description: Validation of request body failed. Read error cause for details
+        "401":
+          description: JWT access token expired - hit /refreshtoken for new one
+        "403":
+          description: Invalid JWT token
+  /api/v1/features:
+    get:
+      tags:
+        - Toilet
+      description: Get all features from the database
+      responses:
+        "200":
+          description: All features fetched from DB
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 1
+                        name:
+                          type: string
+                          example: Accessible Entrance
+                        description:
+                          type: string
+                          nullable: true
+                          description: Description of the feature
+                          example: Ramp available
+                      required:
+                        - id
+                        - name
+                        - description
+                required:
+                  - features
+        "500":
+          description: Something went wrong - i dont know yet what sorry
+  /api/v1/toilet:
+    post:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description: Create new Toilet.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  description: Name of the toilet
+                  example: McDonald Toilet
+                description:
+                  type: string
+                  minLength: 2
+                  description: Location or details about the toilet
+                  example: On the second floor
+                paid:
+                  type: string
+                  enum:
+                    - FREE
+                    - PAID
+                  description: Whether the toilet is FREE or PAID
+                  example: FREE
+                latitude:
+                  type: number
+                  minimum: -90
+                  maximum: 90
+                  description: Latitude of the toilet location
+                  example: -12.04221
+                longitude:
+                  type: number
+                  minimum: -180
+                  maximum: 180
+                  description: Longitude of the toilet location
+                  example: 121.04221
+                features_ids:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 0
+                    exclusiveMinimum: true
+                  description: Array of feature IDs to associate with the toilet
+                  example: *a1
+              required:
+                - name
+                - description
+                - paid
+                - latitude
+                - longitude
+      responses:
+        "201":
+          description: Creation of toilet succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 42
+                  name:
+                    type: string
+                    example: McDonald Toilet
+                  description:
+                    type: string
+                    example: On the second floor
+                  paid:
+                    type: string
+                    enum:
+                      - FREE
+                      - PAID
+                    example: FREE
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: -12.04221
+                      longitude:
+                        type: number
+                        example: 121.04221
+                    required:
+                      - latitude
+                      - longitude
+                  created_by:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 123
+                      username:
+                        type: string
+                        example: Cool user
+                      bio:
+                        type: string
+                        example: I love to pee in McDonald
+                    required:
+                      - id
+                      - username
+                      - bio
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 1
+                        name:
+                          type: string
+                          example: Accessible Entrance
+                        description:
+                          type: string
+                          nullable: true
+                          description: Description of the feature
+                          example: Ramp available
+                      required:
+                        - id
+                        - name
+                        - description
+                    example: &a2
+                      - id: 1
+                        name: Feature 1
+                        description: null
+                      - id: 2
+                        name: Feature 2
+                        description: null
+                      - id: 3
+                        name: Feature 3
+                        description: null
+                  photos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 123
+                        url:
+                          type: string
+                          description: Path to photo in Supabase
+                          example: toilet/42/photo-uuid.jpg
+                        addedBy:
+                          type: object
+                          properties:
+                            userId:
+                              type: number
+                              example: 12
+                            username:
+                              type: string
+                              example: Olek
+                          required:
+                            - userId
+                            - username
+                        createdAt:
+                          type: string
+                          description: Date when the photo was added
+                          example: 2025-06-08T14:37:10.992Z
+                      required:
+                        - id
+                        - url
+                        - addedBy
+                        - createdAt
+                    example: &a3
+                      - id: 1
+                        url: /uploads/photo1.jpg
+                        addedBy:
+                          userId: 5
+                          username: toiletFan99
+                        createdAt: 2025-06-08T14:37:10.992Z
+                      - id: 2
+                        url: /uploads/photo2.jpg
+                        addedBy:
+                          userId: 7
+                          username: bathroomExplorer
+                        createdAt: 2025-06-08T14:37:10.992Z
+                required:
+                  - id
+                  - name
+                  - description
+                  - paid
+                  - location
+                  - created_by
+                  - features
+                  - photos
+        "400":
+          description: Validation of request body failed. Read error cause for details
+        "401":
+          description: JWT access token expired - hit /refreshtoken for new one
+        "403":
+          description: Invalid JWT token
+        "500":
+          description: Inserting toilet to DB failed
+  /api/v1/toilet/inradius:
+    get:
+      tags:
+        - Toilet
+      description:
+        "Get toilets within a radius from a point (user location). 'lng'
+        and 'lat' are user location longitude and latitude, radius is measured
+        in meters. Page and limit are optional and are defaulted to 1 and 20 if
+        not specidied. The result is ordered by distance from user, closest
+        first. Example query:
+        /api/v1/toilet/inradius?lat=52.3676&lng=4.9041&radius=2000"
+      parameters:
+        - schema:
+            type: number
+            nullable: true
+            minimum: -180
+            maximum: 180
+            description: Longitude of user position
+            example: 4.895168
+          required: false
+          name: lng
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -90
+            maximum: 90
+            description: Latitude of user position
+            example: 52.370216
+          required: false
+          name: lat
+          in: query
+        - schema:
+            type: number
+            minimum: 0
+            exclusiveMinimum: true
+            description: Radius of selecting toilets in meters
+            example: 2000
+          required: true
+          name: radius
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            default: 1
+            description: Page number for pagination (default is 1)
+            example: 1
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+            description: Limit of toilets per page (default is 20)
+            example: 20
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Toilets within the specified radius
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 42
+                  name:
+                    type: string
+                    example: McDonald Toilet
+                  description:
+                    type: string
+                    example: On the second floor
+                  paid:
+                    type: string
+                    enum:
+                      - FREE
+                      - PAID
+                    example: FREE
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: -12.04221
+                      longitude:
+                        type: number
+                        example: 121.04221
+                    required:
+                      - latitude
+                      - longitude
+                  created_by:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 123
+                      username:
+                        type: string
+                        example: Cool user
+                      bio:
+                        type: string
+                        example: I love to pee in McDonald
+                    required:
+                      - id
+                      - username
+                      - bio
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 1
+                        name:
+                          type: string
+                          example: Accessible Entrance
+                        description:
+                          type: string
+                          nullable: true
+                          description: Description of the feature
+                          example: Ramp available
+                      required:
+                        - id
+                        - name
+                        - description
+                    example: *a2
+                  photos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 123
+                        url:
+                          type: string
+                          description: Path to photo in Supabase
+                          example: toilet/42/photo-uuid.jpg
+                        addedBy:
+                          type: object
+                          properties:
+                            userId:
+                              type: number
+                              example: 12
+                            username:
+                              type: string
+                              example: Olek
+                          required:
+                            - userId
+                            - username
+                        createdAt:
+                          type: string
+                          description: Date when the photo was added
+                          example: 2025-06-08T14:37:10.992Z
+                      required:
+                        - id
+                        - url
+                        - addedBy
+                        - createdAt
+                    example: *a3
+                required:
+                  - id
+                  - name
+                  - description
+                  - paid
+                  - location
+                  - created_by
+                  - features
+                  - photos
+        "400":
+          description: Validation of query parameters failed
+  /api/v1/toilet/bbox:
+    get:
+      tags:
+        - Toilet
+      description:
+        "Get toilets within bounding box, that is a rectangle. minlng and
+        minlat are x,y of bottom left corner point of rectangle, and maxlng and
+        maxlat are x,y of top right corner point of rectangle. Additional query
+        parameters are ulng and ulat, which are user coordinates, they are
+        optional, if passed, result is ordered by distance to the user (user do
+        not need to be in the bounding box), if not passed result is unordered.
+        Distance is measured in meters if present. Page and limit are optional
+        and are defaulted to 1 and 20 if not specidied. Example query:
+        /api/v1/toilet/bbox?minlng=4.7285&minlat=52.2782&maxlng=5.0792&maxlat=5\
+        2.4312&ulng=4.90385&ulat=52.3547&page=1&limit=20"
+      parameters:
+        - schema:
+            type: number
+            nullable: true
+            minimum: -180
+            maximum: 180
+            description: Minimum longitude of bounding box
+            example: 4.8951
+          required: false
+          name: minlng
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -90
+            maximum: 90
+            description: Minimum latitude of bounding box
+            example: 52.3702
+          required: false
+          name: minlat
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -180
+            maximum: 180
+            description: Maximum longitude of bounding box
+            example: 4.9999
+          required: false
+          name: maxlng
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -90
+            maximum: 90
+            description: Maximum latitude of bounding box
+            example: 52.3999
+          required: false
+          name: maxlat
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -180
+            maximum: 180
+            description: User longitude (optional)
+            example: 4.9001
+          required: false
+          name: ulng
+          in: query
+        - schema:
+            type: number
+            nullable: true
+            minimum: -90
+            maximum: 90
+            description: User latitude (optional)
+            example: 52.37
+          required: false
+          name: ulat
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            default: 1
+            description: Page number for pagination
+            example: 1
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 20
+            description: Number of items per page
+            example: 20
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Toilets within the specified bounding box
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 42
+                  name:
+                    type: string
+                    example: McDonald Toilet
+                  description:
+                    type: string
+                    example: On the second floor
+                  paid:
+                    type: string
+                    enum:
+                      - FREE
+                      - PAID
+                    example: FREE
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: -12.04221
+                      longitude:
+                        type: number
+                        example: 121.04221
+                    required:
+                      - latitude
+                      - longitude
+                  created_by:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 123
+                      username:
+                        type: string
+                        example: Cool user
+                      bio:
+                        type: string
+                        example: I love to pee in McDonald
+                    required:
+                      - id
+                      - username
+                      - bio
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 1
+                        name:
+                          type: string
+                          example: Accessible Entrance
+                        description:
+                          type: string
+                          nullable: true
+                          description: Description of the feature
+                          example: Ramp available
+                      required:
+                        - id
+                        - name
+                        - description
+                    example: *a2
+                  photos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 123
+                        url:
+                          type: string
+                          description: Path to photo in Supabase
+                          example: toilet/42/photo-uuid.jpg
+                        addedBy:
+                          type: object
+                          properties:
+                            userId:
+                              type: number
+                              example: 12
+                            username:
+                              type: string
+                              example: Olek
+                          required:
+                            - userId
+                            - username
+                        createdAt:
+                          type: string
+                          description: Date when the photo was added
+                          example: 2025-06-08T14:37:10.992Z
+                      required:
+                        - id
+                        - url
+                        - addedBy
+                        - createdAt
+                    example: *a3
+                required:
+                  - id
+                  - name
+                  - description
+                  - paid
+                  - location
+                  - created_by
+                  - features
+                  - photos
+        "400":
+          description: Validation of query parameters failed
+  "/api/v1/toilet/{id}/photos":
+    post:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description:
+        "Add photos to toilet. U can add max 10 photos and each needs to be
+        less than 5MB. It is not JSON body but multipart/form-data, the files
+        goes into field with key 'toilet-photos' and can be only .jpg extention.
+        This is JWT protected endpoint of course. Base path for Storage is:
+        https://foiaqnktjmvvenvegymc.supabase.co/storage/v1/object/public/toile\
+        t-photos/ and than u add photo-url (ex:
+        18/104937b1-5593-4679-bf54-4b5e12bb7235.jpg) - this way u get photo from
+        server"
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                toilet-photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - toilet-photos
+      responses:
+        "201":
+          description: Photos uploaded and saved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 123
+                    url:
+                      type: string
+                      description: Path to photo in Supabase
+                      example: toilet/42/photo-uuid.jpg
+                    addedBy:
+                      type: object
+                      properties:
+                        userId:
+                          type: number
+                          example: 12
+                        username:
+                          type: string
+                          example: Olek
+                      required:
+                        - userId
+                        - username
+                    createdAt:
+                      type: string
+                      description: Date when the photo was added
+                      example: 2025-06-08T14:37:10.992Z
+                  required:
+                    - id
+                    - url
+                    - addedBy
+                    - createdAt
+        "400":
+          description: Invalid toilet ID, no files uploaded, or file too large
+        "500":
+          description: Uploading to Supabase or DB failed
+  "/api/v1/toilet/{id}/ratings":
+    post:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description:
+        "Allows to rate the toilet on 3 different fields: cleanliness,
+        accessibility, location. All 3 are neccesarry. For now one user can rate
+        one toilet many times, will be changed in future."
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating_cleanliness:
+                  type: number
+                  example: 1
+                rating_accessibility:
+                  type: number
+                  example: 3
+                rating_location:
+                  type: number
+                  example: 5
+              required:
+                - rating_cleanliness
+                - rating_accessibility
+                - rating_location
+      responses:
+        "201":
+          description: Rating succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userRating:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      userId:
+                        type: number
+                      createdAt:
+                        type: string
+                      rating_cleanliness:
+                        type: number
+                      rating_accessibility:
+                        type: number
+                      rating_location:
+                        type: number
+                      toiletId:
+                        type: number
+                    required:
+                      - id
+                      - userId
+                      - createdAt
+                      - rating_cleanliness
+                      - rating_accessibility
+                      - rating_location
+                      - toiletId
+                  avgRating:
+                    type: object
+                    properties:
+                      toiletId:
+                        type: number
+                        example: 2
+                      avgCleanliness:
+                        type: number
+                        minimum: 1
+                        maximum: 5
+                        example: 2
+                      avgAccessibility:
+                        type: number
+                        minimum: 1
+                        maximum: 5
+                        example: 2
+                      avgLocation:
+                        type: number
+                        minimum: 1
+                        maximum: 5
+                        example: 3
+                      avgRating:
+                        type: number
+                        minimum: 1
+                        maximum: 5
+                        example: 2.33
+                      totalRatings:
+                        type: number
+                        example: 3
+                    required:
+                      - toiletId
+                      - avgCleanliness
+                      - avgAccessibility
+                      - avgLocation
+                      - avgRating
+                      - totalRatings
+                required:
+                  - userRating
+                  - avgRating
+        "400":
+          description: Wrong body, read the error code
+        "401":
+          description: Token Expired
+        "403":
+          description: Invalid token
+        "500":
+          description: Something went wrong
+    get:
+      tags:
+        - Toilet
+      description: Gets all ratings of id toilet from freshest to oldest
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Getting succesfull
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    userId:
+                      type: number
+                    createdAt:
+                      type: string
+                    rating_cleanliness:
+                      type: number
+                    rating_accessibility:
+                      type: number
+                    rating_location:
+                      type: number
+                    toiletId:
+                      type: number
+                  required:
+                    - id
+                    - userId
+                    - createdAt
+                    - rating_cleanliness
+                    - rating_accessibility
+                    - rating_location
+                    - toiletId
+        "500":
+          description: Something went wrong
+  /api/v1/toilet/ratings/my:
+    get:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description: Gets all ratings of requesting user from freshest to oldest
+      responses:
+        "200":
+          description: Getting succesfull
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    userId:
+                      type: number
+                    createdAt:
+                      type: string
+                    rating_cleanliness:
+                      type: number
+                    rating_accessibility:
+                      type: number
+                    rating_location:
+                      type: number
+                    toiletId:
+                      type: number
+                  required:
+                    - id
+                    - userId
+                    - createdAt
+                    - rating_cleanliness
+                    - rating_accessibility
+                    - rating_location
+                    - toiletId
+        "401":
+          description: Token Expired
+        "403":
+          description: Invalid token
+        "500":
+          description: Something went wrong
+  "/api/v1/toilet/{id}/ratings/avg":
+    get:
+      tags:
+        - Toilet
+      description: Get avg rating of toilet
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Getting succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  toiletId:
+                    type: number
+                    example: 2
+                  avgCleanliness:
+                    type: number
+                    minimum: 1
+                    maximum: 5
+                    example: 2
+                  avgAccessibility:
+                    type: number
+                    minimum: 1
+                    maximum: 5
+                    example: 2
+                  avgLocation:
+                    type: number
+                    minimum: 1
+                    maximum: 5
+                    example: 3
+                  avgRating:
+                    type: number
+                    minimum: 1
+                    maximum: 5
+                    example: 2.33
+                  totalRatings:
+                    type: number
+                    example: 3
+                required:
+                  - toiletId
+                  - avgCleanliness
+                  - avgAccessibility
+                  - avgLocation
+                  - avgRating
+                  - totalRatings
+        "500":
+          description: Something went wrong
+  "/api/v1/toilet/{id}/comments":
+    post:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description: Insert new comment for the toilet
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 5
+                  maxLength: 500
+                  example: This is example comment and it needs to have from 5 to 500 characters
+              required:
+                - content
+      responses:
+        "201":
+          description: Comment adding succesfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 223
+                  toiletId:
+                    type: number
+                    example: 21
+                  content:
+                    type: string
+                    minLength: 5
+                    maxLength: 500
+                    example: This is example comment
+                  created_by:
+                    type: object
+                    properties:
+                      userId:
+                        type: number
+                        example: 32
+                      username:
+                        type: string
+                        example: someusername
+                    required:
+                      - userId
+                      - username
+                  created_at:
+                    type: string
+                required:
+                  - id
+                  - toiletId
+                  - content
+                  - created_by
+                  - created_at
+        "400":
+          description: Wrong body, read the error code
+        "401":
+          description: Token Expired
+        "403":
+          description: Invalid token
+        "500":
+          description: Something went wrong
+    get:
+      tags:
+        - Toilet
+      description: Get all comments of toilet ID from freshest to oldest
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Getting succesfull
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 223
+                    toiletId:
+                      type: number
+                      example: 21
+                    content:
+                      type: string
+                      minLength: 5
+                      maxLength: 500
+                      example: This is example comment
+                    created_by:
+                      type: object
+                      properties:
+                        userId:
+                          type: number
+                          example: 32
+                        username:
+                          type: string
+                          example: someusername
+                      required:
+                        - userId
+                        - username
+                    created_at:
+                      type: string
+                  required:
+                    - id
+                    - toiletId
+                    - content
+                    - created_by
+                    - created_at
+        "500":
+          description: Something went wrong
+  /api/v1/toilet/comments/my:
+    get:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description: Get all comments of user ID from freashest to oldest
+      responses:
+        "200":
+          description: Getting succesfull
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 223
+                    toiletId:
+                      type: number
+                      example: 21
+                    content:
+                      type: string
+                      minLength: 5
+                      maxLength: 500
+                      example: This is example comment
+                    created_by:
+                      type: object
+                      properties:
+                        userId:
+                          type: number
+                          example: 32
+                        username:
+                          type: string
+                          example: someusername
+                      required:
+                        - userId
+                        - username
+                    created_at:
+                      type: string
+                  required:
+                    - id
+                    - toiletId
+                    - content
+                    - created_by
+                    - created_at
+        "401":
+          description: Token Expired
+        "403":
+          description: Invalid token
+        "500":
+          description: Something went wrong
+  "/api/v1/toilet/{toiletId}/comments/{commentId}":
+    delete:
+      tags:
+        - Toilet
+      security:
+        - bearerAuth: []
+      description: Deletes specific id comment of requesting user
+      responses:
+        "204":
+          description: Deleting succesfull
+        "401":
+          description: Token Expired
+        "403":
+          description: Invalid token
+        "500":
+          description: Something went wrong
